@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1b4d32">
+  <title>NutriSnap – Snap &amp; Know Your Food</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="layout">
+
+    <!-- ============ LEFT: capture & controls ============ -->
+    <section class="panel panel--input" aria-labelledby="app-title">
+      <header class="brand">
+        <img src="assets/logo.svg" alt="" width="56" height="56">
+        <div>
+          <h1 id="app-title">NutriSnap</h1>
+          <p class="tagline">Snap &amp; Know Your Food</p>
+        </div>
+      </header>
+
+      <h2 class="section-title">Camera / Upload</h2>
+
+      <div class="capture">
+        <!-- capture="environment" opens the rear camera on mobile; the user can still pick from gallery -->
+        <input id="photo-input" type="file" accept="image/*" capture="environment" hidden>
+        <button id="photo-btn" class="dropzone" type="button" aria-label="Take photo or upload meal">
+          <img id="preview" alt="Meal preview" hidden>
+          <span id="dropzone-hint" class="dropzone__hint">
+            <svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+            <span class="btn btn--dark">Take Photo or Upload Meal</span>
+          </span>
+        </button>
+
+        <div class="controls">
+          <div class="mode">
+            <span class="mode__label" id="mode-label">API Mode:</span>
+            <label class="switch">
+              <input id="api-toggle" type="checkbox" role="switch" aria-labelledby="mode-label">
+              <span class="switch__track"></span>
+            </label>
+          </div>
+          <p id="mode-text" class="mode__text">Demo mode (no API calls)</p>
+
+          <div class="services">
+            <label class="service service--gemini">
+              <input id="use-gemini" type="checkbox" checked>
+              <span><strong>Gemini AI</strong><small>(Calorie Predictor)</small></span>
+            </label>
+            <label class="service service--off">
+              <input id="use-off" type="checkbox" checked>
+              <span><strong>Open Food Facts</strong><small>(Nutrition Scanner)</small></span>
+            </label>
+          </div>
+
+          <label class="barcode-field">
+            <span>Barcode (optional)</span>
+            <input id="barcode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="e.g. 3017620422003">
+          </label>
+
+          <button id="scan-btn" class="btn btn--dark btn--block" type="button">Scan Now</button>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <nav class="footer__nav" aria-label="Help and history">
+          <strong>Help/History</strong>
+          <div class="footer__icons">
+            <button id="help-btn" class="icon-btn" type="button" aria-label="Help / settings" title="Help / settings">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm1.3-5.4-.9.9c-.5.5-.4.9-.4 1.5h-2v-.5c0-.9.3-1.6.9-2.1l1.2-1.2a1.5 1.5 0 1 0-2.6-1H8.5a3.5 3.5 0 1 1 5.8 2.4z"/></svg>
+            </button>
+            <button id="history-btn" class="icon-btn" type="button" aria-label="Scan history" title="Scan history">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l3.9 3.9L9 12H6a7 7 0 1 1 2 4.9l-1.4 1.4A9 9 0 1 0 13 3zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H12z"/></svg>
+            </button>
+          </div>
+        </nav>
+        <div class="footer__status">
+          <strong id="status-title">Ready to scan.</strong>
+          <p id="status-text" role="status" aria-live="polite">Snap your meal or look up a barcode.</p>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ============ RIGHT: results ============ -->
+    <section class="panel panel--results" aria-label="Results">
+      <article class="card card--meal" aria-labelledby="meal-title">
+        <h2 id="meal-title">Detected Meal &amp; Calorie Prediction</h2>
+        <div class="meal-photo">
+          <img id="result-photo" alt="" hidden>
+          <p id="result-placeholder" class="placeholder">Your meal will appear here</p>
+        </div>
+        <p class="meal-name" id="meal-name">—</p>
+        <p class="estimate-label">Estimated:</p>
+        <p class="kcal"><span id="kcal">—</span> <small>kcal</small></p>
+        <p class="confidence-label">AI Confidence: <span id="confidence-pct"></span></p>
+        <div class="bar"><div id="confidence-bar" class="bar__fill bar__fill--green" style="width:0"></div></div>
+        <p id="meal-notes" class="notes"></p>
+      </article>
+
+      <article class="card card--facts" aria-labelledby="facts-title">
+        <h2 id="facts-title">Nutritional Facts</h2>
+
+        <div class="score-row">
+          <span>Nutritional<br>Score:</span>
+          <span id="grade" class="grade" data-grade="">—</span>
+        </div>
+
+        <h3>Breakdown <small id="breakdown-basis"></small></h3>
+        <ul class="breakdown">
+          <li><span>Calories: <b id="b-cal">—</b></span><div class="bar"><div id="bar-cal" class="bar__fill bar__fill--orange"></div></div></li>
+          <li><span>Protein: <b id="b-pro">—</b></span><div class="bar"><div id="bar-pro" class="bar__fill bar__fill--blue"></div></div></li>
+          <li><span>Carbs: <b id="b-carb">—</b></span><div class="bar"><div id="bar-carb" class="bar__fill bar__fill--green"></div></div></li>
+          <li><span>Fats: <b id="b-fat">—</b></span><div class="bar"><div id="bar-fat" class="bar__fill bar__fill--yellow"></div></div></li>
+        </ul>
+
+        <hr>
+        <h3>Open Food Facts Data</h3>
+        <p id="off-product" class="off-product">No product looked up yet.</p>
+        <div id="badges" class="badges"></div>
+        <p class="barcode-info">Barcode Scan Info: <code id="barcode-info">—</code></p>
+      </article>
+    </section>
+  </main>
+
+  <!-- Settings / help dialog -->
+  <dialog id="settings-dialog">
+    <form method="dialog" class="dialog">
+      <h2>Help &amp; Settings</h2>
+      <p><b>Meal photo:</b> tick Gemini AI, add a photo, press <b>Scan Now</b> (needs API Mode on).</p>
+      <p><b>Packaged food:</b> photograph the barcode (or type its digits), tick Open Food Facts, press <b>Scan Now</b>.</p>
+      <p>With API Mode off you get demo data so you can test the interface.</p>
+      <p class="warn">The Gemini key is held by a server-side proxy, never in this page. Scans are limited to protect the quota; if you hit the limit, wait for the countdown.</p>
+      <div class="dialog__actions">
+        <button class="btn btn--dark" value="close">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- History dialog -->
+  <dialog id="history-dialog">
+    <form method="dialog" class="dialog">
+      <h2>Scan history</h2>
+      <ul id="history-list" class="history"></ul>
+      <div class="dialog__actions">
+        <button id="clear-history" class="btn btn--light" type="button">Clear</button>
+        <button class="btn btn--dark" value="close">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

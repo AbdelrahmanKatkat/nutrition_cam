@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NutriSnap logo">
+  <!-- leaves -->
+  <path d="M22 18c0-8 5-13 13-13-1 8-5 13-13 13z" fill="#4c9a5f"/>
+  <path d="M30 18c2-6 7-9 13-9-1 6-5 9-13 9z" fill="#2f7a47"/>
+  <!-- camera body -->
+  <rect x="4" y="18" width="56" height="40" rx="8" fill="#1b4d32"/>
+  <rect x="38" y="13" width="14" height="8" rx="3" fill="#1b4d32"/>
+  <!-- lens -->
+  <circle cx="30" cy="38" r="14" fill="#fbf6e9"/>
+  <circle cx="30" cy="38" r="9" fill="#1b4d32"/>
+  <circle cx="26.5" cy="34.5" r="2.5" fill="#fbf6e9"/>
+</svg>

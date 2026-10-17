@@ -1,0 +1,21 @@
+name = "nutrisnap-proxy"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Comma-separated list of sites allowed to call the proxy. EDIT THE GITHUB PAGES ORIGIN.
+# (An origin is scheme + host only: no path and no trailing slash.)
+ALLOWED_ORIGINS = "https://abdelrahmankatkat.github.io,http://localhost:8080"
+GEMINI_MODEL = "gemini-2.5-flash"
+
+# Per-client throttle in front of Gemini (needs wrangler >= 4.36). period must be 10 or 60.
+# Counters are per Cloudflare location and approximate – a guard, not exact accounting.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+# The API key is NOT here. Set it as a secret:  npx wrangler secret put GEMINI_API_KEY
