@@ -18,7 +18,8 @@ import { CONFIG } from '../config.js';
  * @property {number}   proteinG
  * @property {number}   carbsG
  * @property {number}   fatG
- * @property {string[]} ingredients
+ * @property {{name:string, grams:number, calories:number}[]} items  per-item estimate
+ * @property {string[]} ingredients  item names
  * @property {string}   notes        assumptions (portion size etc.)
  */
 
@@ -70,14 +71,20 @@ export async function predictMeal(image) {
 /** Clamp / coerce model output so the UI never has to defend against odd values. */
 function normalize(raw) {
   const num = (v) => (Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0);
+  const items = (Array.isArray(raw.items) ? raw.items : []).map((i) => ({
+    name: String(i.name || 'item'), grams: Math.round(num(i.grams)), calories: Math.round(num(i.calories)),
+  }));
+  // Models are unreliable at arithmetic: prefer the sum of the per-item calories over their own total.
+  const itemSum = items.reduce((t, i) => t + i.calories, 0);
   return {
     mealName: String(raw.mealName || 'Unknown meal'),
-    calories: Math.round(num(raw.calories)),
+    items,
+    calories: itemSum > 0 ? itemSum : Math.round(num(raw.calories)),
     confidence: Math.min(1, num(raw.confidence)),
     proteinG: Math.round(num(raw.proteinG)),
     carbsG: Math.round(num(raw.carbsG)),
     fatG: Math.round(num(raw.fatG)),
-    ingredients: Array.isArray(raw.ingredients) ? raw.ingredients.map(String) : [],
+    ingredients: items.map((i) => i.name),
     notes: String(raw.notes || ''),
   };
 }
@@ -95,7 +102,14 @@ export async function mockPredictMeal() {
     proteinG: 18,
     carbsG: 32,
     fatG: 14,
-    ingredients: ['avocado', 'roasted vegetables', 'chickpeas', 'quinoa', 'hummus'],
+    items: [
+      { name: 'quinoa', grams: 120, calories: 144 },
+      { name: 'roasted vegetables', grams: 150, calories: 110 },
+      { name: 'chickpeas', grams: 80, calories: 100 },
+      { name: 'avocado', grams: 50, calories: 80 },
+      { name: 'hummus', grams: 30, calories: 16 },
+    ],
+    ingredients: ['quinoa', 'roasted vegetables', 'chickpeas', 'avocado', 'hummus'],
     notes: 'Demo data – turn on API Mode and add a Gemini key for a real estimate.',
   };
 }

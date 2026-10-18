@@ -116,13 +116,19 @@ async function onScan() {
     }
 
     // 2) Product facts: barcode wins, otherwise search by the AI's meal name
+    let offFailed = false;
     if (useOff) {
-      if (!live) {
-        product = mockProduct(barcode);
-      } else if (barcode) {
-        product = await getProductByBarcode(barcode);
-      } else if (meal) {
-        product = await searchProduct(meal.mealName);
+      try {
+        if (!live) {
+          product = mockProduct(barcode);
+        } else if (barcode) {
+          product = await getProductByBarcode(barcode);
+        } else if (meal && meal.calories > 0) {
+          product = await searchProduct(meal.mealName);
+        }
+      } catch (err) {
+        console.warn(err); // Open Food Facts is community-run and sometimes returns 5xx
+        offFailed = true;
       }
       ui.renderProduct(product, barcode);
     }
@@ -140,9 +146,11 @@ async function onScan() {
     if (meal || product) await saveToHistory(meal, product);
 
     if (meal) {
-      ui.setStatus('Done.', `${meal.mealName}: ${meal.calories} kcal`);
+      ui.setStatus('Done.', `${meal.mealName}: ${meal.calories} kcal${offFailed ? ' (Open Food Facts is unavailable right now)' : ''}`);
     } else if (product) {
       ui.setStatus('Product found.', product.name);
+    } else if (offFailed) {
+      ui.setStatus('Open Food Facts unavailable.', 'The food database did not respond. Try again in a moment.', true);
     } else if (useOff && !barcode) {
       ui.setStatus('No barcode found.', 'Could not read a barcode from the photo. Type the digits, or tick Gemini AI to identify the meal.', true);
     } else {

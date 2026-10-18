@@ -105,16 +105,21 @@ Phone photos are 3–12 MB. The proxy and Gemini only need enough detail to reco
 2. **ZXing fallback** (`@zxing/library`, imported on demand from jsDelivr) – needed on desktop Chrome/Windows and Firefox, which lack the native API. Restricted to EAN-13/EAN-8/UPC-A/UPC-E with `TRY_HARDER` for photos that are slightly blurry.
 3. **Manual entry** – always available. A barcode cropped in the photo cannot be decoded; the status line says so.
 
-### 4.3 The Gemini call and structured output
-The Worker sends the photo plus a prompt and a **response schema** (`responseMimeType: application/json`, `responseSchema`). Constraining the output to a schema means:
-- no fragile parsing of free text,
-- guaranteed fields: `mealName, calories, confidence, proteinG, carbsG, fatG, ingredients, notes`,
-- a place for the model to state assumptions (`notes`) – portion size is the main error source.
+### 4.3 The Gemini call, prompt and structured output
+The Worker sends the photo with a **system instruction** (role, method, rules) and a **response schema** (`responseMimeType: application/json`). The prompt lives in `proxy/src/index.js` and is built on these ideas:
 
-`temperature: 0.2` favours consistent answers. On the client, `normalize()` clamps and coerces everything (negative numbers → 0, confidence ≤ 1) so the UI never defends against odd model output.
+- **A fixed method, not "guess the calories".** Identify items → estimate grams per item using scale references (plate, fork, hand) and depth → kcal = grams × kcal/g of the *cooked* food → add hidden fat (oil, butter, sauce) → total. Per-item reasoning is far more accurate than one guess for the whole plate.
+- **Calibrated confidence.** Explicit bands (clear items 0.8–0.9, mixed plate 0.55–0.8, soups/wraps 0.3–0.55) and a 0.9 cap, so the confidence bar means something.
+- **Defined edge cases.** Legible nutrition label → use it; no food → `items: []`, 0 kcal, "No food detected"; uncertainty → lower confidence, never refuse.
+- **Schema with per-field descriptions.** `items[] {name, grams, calories}` plus totals. The client recomputes total kcal as the **sum of item calories**, because models are unreliable at arithmetic.
+- **Model default temperature.** Google advises against lowering it for Gemini 3 models.
+
+The model is a Worker variable (`GEMINI_MODEL`, now `gemini-3.5-flash-lite`). The 2.5 models are only served to accounts that already used them, so a new key gets HTTP 404 from Gemini for `gemini-2.5-flash`.
+
+On the client, `normalize()` clamps and coerces everything (negative numbers → 0, confidence ≤ 1) so the UI never defends against odd model output.
 
 ### 4.4 Open Food Facts (`services/openfoodfacts.js`)
-- **By barcode:** `GET /api/v2/product/{code}.json?fields=…` → `status === 1` means found.
+- **By barcode:** `GET /api/v2/product/{code}.json?fields=…` → `status === 1` means found. An unknown barcode returns **HTTP 404**, which the client treats as "not found" rather than an error.
 - **By name:** `GET /cgi/search.pl?search_terms=…&json=1&page_size=1` – a best-effort match for the meal name Gemini produced. For composite home-cooked meals this often finds nothing; that is expected and the UI says "No matching product".
 - Only needed fields are requested (smaller payloads). Label tags such as `en:no-added-sugar` become "No added sugar". OFF data is user-contributed, so it is HTML-escaped before rendering.
 - No API key and CORS is enabled, so the browser calls it **directly** – nothing about it needs the proxy.
@@ -221,7 +226,7 @@ More ideas, ordered by value, are in [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md
 ## 10. Known limitations
 
 - Calorie estimates from a photo are approximate (hidden oils, portion depth, sauces). Treat as ±20–30 %.
-- OFF search by meal name rarely matches composite dishes; barcodes are far more reliable.
+- OFF search by meal name rarely matches composite dishes; barcodes are far more reliable. OFF sometimes returns 5xx; a failure there never discards the AI result.
 - Rate limiter is approximate; the origin check is forgeable outside browsers (see §5.3).
 - Camera capture requires HTTPS (GitHub Pages and `localhost` qualify).
 - Photos are sent to Google when Live mode is used; add a consent notice before making the site public.
@@ -233,6 +238,8 @@ More ideas, ordered by value, are in [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md
 3. **Key handling** – first moved the key into an on-page field (stored in the browser), then realised a static site can never protect a key and GitHub Secrets don't apply at runtime. **Fix:** Cloudflare Worker proxy with a secret.
 4. **Resilience** – timeouts, cooldown, 429 handling after checking Gemini's documented limits.
 5. **Deploy** – `wrangler login` → `wrangler secret put GEMINI_API_KEY` → `wrangler deploy`. Worker live at `https://nutrisnap-proxy.abdelrahman-katkat.workers.dev`. Post-deploy review caught that `ALLOWED_ORIGINS` held the repo URL instead of the Pages origin (§5.4).
+
+6. **First live test** – the page showed a 404. Two separate causes: Open Food Facts returns 404 for unknown barcodes (treated as a fatal error), and Gemini returned 404 because `gemini-2.5-flash` is no longer served to new accounts. **Fix:** 404 = "not found" for OFF, OFF errors isolated from the meal result, model moved to `gemini-3.5-flash-lite`, prompt rewritten with per-item estimation.
 
 ## 12. Glossary
 

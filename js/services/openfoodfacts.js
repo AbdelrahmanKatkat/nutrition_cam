@@ -47,8 +47,10 @@ export async function searchProduct(query) {
   return hit ? normalize(hit) : null;
 }
 
+/** Open Food Facts answers HTTP 404 for an unknown barcode - that means "not found", not a failure. */
 async function getJson(url) {
   const res = await fetch(url);
+  if (res.status === 404) return {};
   if (!res.ok) throw new Error(`Open Food Facts request failed (${res.status}).`);
   return res.json();
 }

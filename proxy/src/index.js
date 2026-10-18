@@ -17,24 +17,51 @@ const MAX_BASE64_CHARS = 4_000_000;   // ≈ 3 MB image; the client already down
 const UPSTREAM_TIMEOUT_MS = 20_000;   // give up on Gemini after 20 s
 const DEFAULT_RETRY_AFTER_S = 30;     // Gemini doesn't document a Retry-After header
 
-const PROMPT = `You are a nutrition assistant. Look at the meal photo and estimate the nutrition
-of the whole visible portion. Be realistic about portion size and state assumptions in "notes".
-If the image does not contain food, return calories 0, confidence 0 and explain in "notes".`;
+/** Role, method and rules. Sent as the system instruction so the model treats it as policy. */
+const SYSTEM_PROMPT = `You are an expert dietitian and food-photo analyst. Estimate the nutrition of the meal in the photo.
 
-/** Structured-output schema: forces valid JSON from the model. */
+METHOD (follow in order)
+1. Identify every distinct food and drink that is visible. Use the most specific common name ("grilled chicken breast", not "meat"). Ignore plates, cutlery, packaging and garnish smaller than a teaspoon.
+2. Estimate each item's weight in grams AS SERVED (cooked weight). Use scale references in the photo - a dinner plate (~26 cm), fork, hand, cup, can, bottle - and judge depth and height, not just footprint. With no reference, assume a typical home or restaurant portion and say so.
+3. Calories per item = grams x typical kcal per gram of that food in its cooked form (e.g. cooked white rice ~1.3, grilled chicken breast ~1.65, boiled beans ~1.2, bread ~2.6, olive oil ~8.8). Include energy from visible and likely hidden fat: cooking oil, butter, dressings, sauces, cheese, frying. If unsure whether oil was used, assume a modest amount typical for the dish and mention it.
+4. Total protein, carbohydrate and fat in grams for the whole meal. They must be consistent with the calories (4 / 4 / 9 kcal per gram, within ~10%).
+5. Confidence from 0 to 1: 0.8-0.9 clear separate items with a scale reference; 0.55-0.8 typical mixed plate; 0.3-0.55 hidden or blended ingredients (soups, stews, wraps, sauces) or poor light/angle; below 0.3 you can barely tell. Never exceed 0.9.
+
+RULES
+- Estimate only what is in the photo, for the whole visible portion. Count every plate or serving shown.
+- If a packaged product's Nutrition Facts label is legible, use its values for that item and say so in notes.
+- Never refuse because of uncertainty: give your best estimate and lower the confidence.
+- If the photo contains no food: items = [], calories 0, confidence 0, mealName "No food detected", and explain in notes.
+- Use metric units and plain numbers. mealName is a short human-readable title. notes is at most two sentences naming the key assumptions (portion references, assumed oil or sauce).`;
+
+const USER_PROMPT = 'Analyse this meal photo and return the nutrition estimate.';
+
+/** Structured-output schema: forces valid JSON, and the descriptions steer the model per field. */
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
   properties: {
-    mealName:    { type: 'STRING' },
-    calories:    { type: 'NUMBER' },
-    confidence:  { type: 'NUMBER', description: '0 to 1' },
-    proteinG:    { type: 'NUMBER' },
-    carbsG:      { type: 'NUMBER' },
-    fatG:        { type: 'NUMBER' },
-    ingredients: { type: 'ARRAY', items: { type: 'STRING' } },
-    notes:       { type: 'STRING' },
+    mealName:   { type: 'STRING', description: 'Short title for the whole meal' },
+    items: {
+      type: 'ARRAY',
+      description: 'Every food/drink item with its estimated serving',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          name:     { type: 'STRING' },
+          grams:    { type: 'NUMBER', description: 'Estimated weight as served, in grams' },
+          calories: { type: 'NUMBER', description: 'kcal for this item, including added fat' },
+        },
+        required: ['name', 'grams', 'calories'],
+      },
+    },
+    calories:   { type: 'NUMBER', description: 'Total kcal = sum of item calories' },
+    proteinG:   { type: 'NUMBER', description: 'Total protein in grams' },
+    carbsG:     { type: 'NUMBER', description: 'Total carbohydrate in grams' },
+    fatG:       { type: 'NUMBER', description: 'Total fat in grams' },
+    confidence: { type: 'NUMBER', description: '0 to 1, never above 0.9' },
+    notes:      { type: 'STRING', description: 'At most two sentences of key assumptions' },
   },
-  required: ['mealName', 'calories', 'confidence', 'proteinG', 'carbsG', 'fatG', 'ingredients', 'notes'],
+  required: ['mealName', 'items', 'calories', 'proteinG', 'carbsG', 'fatG', 'confidence', 'notes'],
 };
 
 export default {
@@ -80,7 +107,7 @@ export default {
     if (!ALLOWED_MIME.has(mimeType)) return reply({ error: 'Unsupported image type' }, 415);
 
     // --- call Gemini with a timeout ---
-    const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
     let upstream;
     try {
       upstream = await fetch(`${GEMINI_BASE}/${model}:generateContent`, {
@@ -88,8 +115,10 @@ export default {
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
         signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
         body: JSON.stringify({
-          contents: [{ parts: [{ text: PROMPT }, { inline_data: { mime_type: mimeType, data: image } }] }],
-          generationConfig: { temperature: 0.2, responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: image } }, { text: USER_PROMPT }] }],
+          // Temperature left at the model default: Google advises against lowering it for Gemini 3 models.
+          generationConfig: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
         }),
       });
     } catch (err) {

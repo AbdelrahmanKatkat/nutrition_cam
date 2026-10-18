@@ -54,6 +54,9 @@ export function renderMeal(meal, photoUrl) {
   const pct = Math.round(meal.confidence * 100);
   $('confidence-pct').textContent = `${pct}%`;
   $('confidence-bar').style.width = `${pct}%`;
+  $('meal-items').textContent = meal.items?.length
+    ? meal.items.map((i) => `${i.name} ~${i.grams} g (${i.calories} kcal)`).join(' · ')
+    : '';
   $('meal-notes').textContent = meal.notes;
 }
 
