@@ -10,8 +10,8 @@ export const CONFIG = {
    */
   proxy: {
     url: 'https://nutrisnap-proxy.abdelrahman-katkat.workers.dev',
-    /** Abort the request if the proxy/Gemini hasn't answered in this many ms. */
-    timeoutMs: 25000,
+    /** Abort if the proxy hasn't answered in this many ms. Covers the Worker's retries (see proxy/src/index.js). */
+    timeoutMs: 60000,
   },
 
   /** Client-side throttling so rapid taps can't burn through the Gemini quota. */

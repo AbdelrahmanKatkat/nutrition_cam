@@ -110,9 +110,10 @@ The Worker sends the photo with a **system instruction** (role, method, rules) a
 - **Calibrated confidence.** Explicit bands (clear items 0.8–0.9, mixed plate 0.55–0.8, soups/wraps 0.3–0.55) and a 0.9 cap, so the confidence bar means something.
 - **Defined edge cases.** Legible nutrition label → use it; no food → `items: []`, 0 kcal, "No food detected"; uncertainty → lower confidence, never refuse.
 - **Schema with per-field descriptions.** `items[] {name, grams, calories}` plus totals. The client recomputes total kcal as the **sum of item calories**, because models are unreliable at arithmetic.
+- **Food check first.** Step 0 of the method decides whether the photo shows food, a drink, or a packaged product (package, barcode or label). Anything else returns `isFood: false`, and the app shows "No food detected" instead of a calorie figure. A user hint cannot override this.
 - **Model default temperature.** Google advises against lowering it for Gemini 3 models.
 
-The model is a Worker variable (`GEMINI_MODEL`, now `gemini-3.5-flash-lite`). The 2.5 models are only served to accounts that already used them, so a new key gets HTTP 404 from Gemini for `gemini-2.5-flash`.
+The model is a Worker variable (`GEMINI_MODEL`, now `gemini-3.5-flash-lite`; `GEMINI_FALLBACK_MODEL` is used once if the main model stays busy). Busy responses (500/502/503/504) are retried twice with back-off, so a short Gemini outage is hidden from the user; if it persists the app says "Gemini is busy right now". The 2.5 models are only served to accounts that already used them, so a new key gets HTTP 404 from Gemini for `gemini-2.5-flash`.
 
 On the client, `normalize()` clamps and coerces everything (negative numbers → 0, confidence ≤ 1) so the UI never defends against odd model output.
 

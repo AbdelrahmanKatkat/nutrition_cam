@@ -152,7 +152,7 @@ async function onScan() {
     }
 
     // 3) Breakdown: prefer the meal estimate, fall back to per-100g product data
-    if (meal) {
+    if (meal && meal.isFood) {
       ui.renderBreakdown(
         { kcal: meal.calories, protein: meal.proteinG, carbs: meal.carbsG, fat: meal.fatG },
         'AI estimate, whole meal',
@@ -161,9 +161,11 @@ async function onScan() {
       ui.renderBreakdown(product.per100g, 'per 100 g');
     }
 
-    if (meal || product) await saveToHistory(meal, product);
+    if ((meal && meal.isFood) || product) await saveToHistory(meal, product);
 
-    if (meal) {
+    if (meal && !meal.isFood) {
+      ui.setStatus('No food detected.', meal.notes || 'Upload a photo of a meal, drink or food package.', true);
+    } else if (meal) {
       ui.setStatus('Done.', `${meal.mealName}: ${meal.calories} kcal${offFailed ? ' (Open Food Facts is unavailable right now)' : ''}`);
     } else if (product) {
       ui.setStatus('Product found.', product.name);

@@ -8,6 +8,8 @@ compatibility_date = "2025-01-01"
 ALLOWED_ORIGINS = "https://abdelrahmankatkat.github.io,http://localhost:8080"
 # gemini-2.5-* is only served to accounts that already used it (new keys get 404). Alternative: "gemini-3.8-flash" (more accurate, costlier).
 GEMINI_MODEL = "gemini-3.5-flash-lite"
+# Used once if the main model stays busy (503) after retries.
+GEMINI_FALLBACK_MODEL = "gemini-3.8-flash"
 
 # Per-client throttle in front of Gemini (needs wrangler >= 4.36). period must be 10 or 60.
 # Counters are per Cloudflare location and approximate – a guard, not exact accounting.

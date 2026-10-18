@@ -11,6 +11,7 @@ import { CONFIG } from '../config.js';
 
 /**
  * @typedef {Object} MealPrediction
+ * @property {boolean}  isFood       false when the photo shows no food, drink or food package
  * @property {string}   mealName
  * @property {number}   calories     total kcal for the visible portion
  * @property {number}   confidence   0..1
@@ -77,6 +78,7 @@ function normalize(raw) {
   // Models are unreliable at arithmetic: prefer the sum of the per-item calories over their own total.
   const itemSum = items.reduce((t, i) => t + i.calories, 0);
   return {
+    isFood: raw.isFood !== false,
     mealName: String(raw.mealName || 'Unknown meal'),
     items,
     calories: itemSum > 0 ? itemSum : Math.round(num(raw.calories)),
