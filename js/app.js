@@ -95,6 +95,8 @@ async function onPhotoChosen(e) {
       ui.setStatus('Barcode detected.', `${code} – press Scan Now to look it up.`);
     }
   } catch (err) {
+    state.image = null; // never scan a half-loaded photo
+    ui.resetPreview();
     ui.setStatus('Could not read photo.', err.message, true);
   }
 }

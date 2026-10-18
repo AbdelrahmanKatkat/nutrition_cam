@@ -13,16 +13,40 @@ import { CONFIG } from '../config.js';
  * @returns {Promise<{base64:string, dataUrl:string, mimeType:string}>}
  */
 export async function prepareImage(file, maxSide = CONFIG.image.maxSide) {
-  const bitmap = await createImageBitmap(file); // honours EXIF orientation in modern browsers
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const source = await decode(file);
+  const scale = Math.min(1, maxSide / Math.max(source.width, source.height));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close?.();
+  canvas.width = Math.round(source.width * scale);
+  canvas.height = Math.round(source.height * scale);
+  canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
+  source.close?.();
 
   const dataUrl = canvas.toDataURL('image/jpeg', CONFIG.image.jpegQuality);
   return { dataUrl, base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' };
+}
+
+/**
+ * Decode a picked file. createImageBitmap is fast and honours EXIF rotation, but some browsers
+ * reject formats it can decode through <img> (or the reverse), so try both before giving up.
+ * @param {File} file
+ * @returns {Promise<ImageBitmap|HTMLImageElement>}
+ */
+async function decode(file) {
+  try {
+    return await createImageBitmap(file);
+  } catch {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      return img;
+    } catch {
+      throw new Error('This photo format is not supported by your browser. Take a new photo, or choose a JPEG or PNG.');
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
 }
 
 /** Tiny thumbnail for the history list. */
