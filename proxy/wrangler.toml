@@ -5,7 +5,10 @@ compatibility_date = "2025-01-01"
 [vars]
 # Comma-separated list of sites allowed to call the proxy. EDIT THE GITHUB PAGES ORIGIN.
 # (An origin is scheme + host only: no path and no trailing slash.)
-ALLOWED_ORIGINS = "https://abdelrahmankatkat.github.io,http://localhost:8080"
+ALLOWED_ORIGINS = "https://abdelrahmankatkat.github.io"
+# true = also accept http://localhost and http://127.0.0.1 on any port (for testing on your PC).
+# Set to "false" before a public launch.
+ALLOW_LOCALHOST = "true"
 # gemini-2.5-* is only served to accounts that already used it (new keys get 404). Alternative: "gemini-3.8-flash" (more accurate, costlier).
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 # Used once if the main model stays busy (503) after retries.

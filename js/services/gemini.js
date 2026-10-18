@@ -56,7 +56,11 @@ export async function predictMeal(image, hint = '') {
     if (err.name === 'TimeoutError' || err.name === 'AbortError') {
       throw new Error(`The request timed out after ${Math.round(timeoutMs / 1000)}s. Please try again.`);
     }
-    throw new Error('Could not reach the proxy. Check your connection and proxy.url.');
+    // A browser reports a blocked (CORS) response the same way as no network, so name both causes.
+    throw new Error(
+      `Could not reach the proxy. Check your internet connection. ` +
+      `If you opened this page from ${location.origin}, that address must be allowed in ALLOWED_ORIGINS or ALLOW_LOCALHOST (proxy/wrangler.toml).`,
+    );
   }
 
   if (res.status === 429) {

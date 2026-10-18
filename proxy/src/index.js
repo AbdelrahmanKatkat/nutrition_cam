@@ -82,7 +82,9 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
-    const originOk = allowed.includes(origin);
+    // Local development: http://localhost:<any port> and http://127.0.0.1:<any port>, when enabled in wrangler.toml.
+    const isLocal = env.ALLOW_LOCALHOST === 'true' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const originOk = allowed.includes(origin) || isLocal;
     const cors = {
       'Access-Control-Allow-Origin': originOk ? origin : 'null',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
