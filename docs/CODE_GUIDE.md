@@ -536,6 +536,6 @@ Found while writing this guide, not yet fixed:
 1. **Unused constant** in `proxy/src/index.js`: `UPSTREAM_TIMEOUT_MS` is no longer read after the retry rewrite. It should be deleted.
 2. **Non-food results show "0"** in the kcal slot. The status line is correct, but the number should show a dash.
 3. **Rate limit is per IP**, so several people behind one mobile network share the five-per-minute quota.
-4. **`localhost` is in `ALLOWED_ORIGINS`.** Harmless, but remove it before a public launch if you want the strictest setting.
+4. **Local origins are allowed** while `ALLOW_LOCALHOST = "true"` in `proxy/wrangler.toml`. Set it to `"false"` before a public launch. Other origins must be listed in `ALLOWED_ORIGINS`.
 
 Larger next steps are in [IMPROVEMENTS.md](IMPROVEMENTS.md). The agent design is in [AGENTIC_AI.md](AGENTIC_AI.md).
