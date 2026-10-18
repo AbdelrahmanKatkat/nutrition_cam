@@ -47,4 +47,4 @@ The Worker has an origin allow-list, per-IP rate limit, payload validation and a
 
 ## 6. Privacy
 
-Photos are sent to Google when API Mode is on. Add a one-time consent notice, and mention it in a privacy section of the README if the site is public. History stores only small thumbnails, locally.
+Photos are sent to Google on every AI scan. Add a one-time consent notice, and mention it in a privacy section of the README if the site is public. History stores only small thumbnails, locally.

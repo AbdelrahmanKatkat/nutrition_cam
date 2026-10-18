@@ -26,9 +26,9 @@ function write(key, value) {
   }
 }
 
-/** @returns {{apiMode:boolean, useGemini:boolean, useOff:boolean}} */
+/** @returns {{useGemini:boolean, useOff:boolean}} */
 export function loadSettings() {
-  return { apiMode: false, useGemini: true, useOff: true, ...read(KEYS.settings, {}) };
+  return { useGemini: true, useOff: true, ...read(KEYS.settings, {}) };
 }
 
 /** @param {Partial<ReturnType<typeof loadSettings>>} patch */

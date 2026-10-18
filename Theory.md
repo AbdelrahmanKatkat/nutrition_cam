@@ -27,8 +27,7 @@ The UI is deliberately honest about this difference. The **meal estimate** shows
 1. **Static hosting on GitHub Pages.** Only HTML/CSS/JS can be served – no server code, no secrets. → No build step, plain ES modules.
 2. **Secrets cannot live in a static site.** Anything the page uses is downloadable by every visitor. A Gemini key in the JS (or in `localStorage` typed by the user) is exposed. GitHub Secrets exist only for build/CI steps, not for code running in a browser. → A tiny **server-side proxy** holds the key.
 3. **Gemini has quotas.** Limits are per Google project (requests/min, tokens/min, requests/day) and exceeding them returns HTTP 429. → Throttle at every layer and degrade gracefully.
-4. **Test before paying.** The owner wanted to try the product before adding a key. → A **Demo mode** returns fake data through the same code path.
-5. **Mobile first.** The camera is the input. → `<input type="file" capture="environment">`, client-side image downscaling, responsive layout.
+4. **Mobile first.** The camera is the input. → `<input type="file" capture="environment">`, client-side image downscaling, responsive layout.
 
 ---
 
@@ -89,9 +88,8 @@ User taps photo ─► onPhotoChosen()
 User taps Scan Now ─► onScan()
    ├─ validate: need a photo or a barcode
    ├─ if live Gemini call: refuse while inside cooldown / 429 back-off window
-   ├─ (1) MEAL    live → predictMeal() → proxy → Gemini      demo → mockPredictMeal()
+   ├─ (1) MEAL    predictMeal() → proxy → Gemini
    ├─ (2) PRODUCT live → barcode ? getProductByBarcode() : searchProduct(meal.mealName)
-   │              demo → mockProduct()
    ├─ (3) RENDER  meal card, breakdown bars (meal estimate, else per-100 g), Nutri-Score, badges
    ├─ (4) SAVE    thumbnail + name + kcal → localStorage history (last 20)
    └─ (5) STATUS  precise message: Done / Product found / No barcode found / Not found / Rate limit
@@ -191,14 +189,10 @@ The browser does **not** auto-retry on 429 – blind retries make rate limiting 
 
 ---
 
-## 7. Modes
+## 7. Session behaviour
 
-| Mode | API Mode toggle | Gemini | Open Food Facts | Use |
-|---|---|---|---|---|
-| **Demo** | off | `mockPredictMeal()` (450 kcal bowl) | `mockProduct()` | Test UI/flow with zero setup |
-| **Live** | on | Proxy → Gemini | Real API | Real results |
-
-Both modes run through the *same* `onScan()` code; only the data source differs, so what you test in Demo is what runs live.
+- **The photo stays loaded after a scan.** Edit the description (or the barcode, or the Gemini/Open Food Facts ticks) and press **Scan Now** again to re-run on the same photo – no re-upload. Results are cleared at the start of each run so nothing stale remains. The 8 s cooldown still applies to AI calls.
+- **New item (refresh icon)** next to *Camera / Upload* resets everything: photo, description, barcode, result cards and status. It also clears the file input so the same file can be chosen again.
 
 ---
 
@@ -241,7 +235,7 @@ More ideas, ordered by value, are in [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md
 
 ## 11. Project timeline (how it came together)
 
-1. **Scaffold** – static site matching the reference design, services split by concern, Demo mode, history, GitHub Pages workflow, docs.
+1. **Scaffold** – static site matching the reference design, services split by concern, history, GitHub Pages workflow, docs.
 2. **First test** – a barcode photo returned "Product found" with empty results. Root causes: (a) the status text was unconditional, (b) desktop Chrome has no `BarcodeDetector`, so the barcode field stayed empty. **Fix:** ZXing fallback, accurate status messages (found / not found / no barcode).
 3. **Key handling** – first moved the key into an on-page field (stored in the browser), then realised a static site can never protect a key and GitHub Secrets don't apply at runtime. **Fix:** Cloudflare Worker proxy with a secret.
 4. **Resilience** – timeouts, cooldown, 429 handling after checking Gemini's documented limits.

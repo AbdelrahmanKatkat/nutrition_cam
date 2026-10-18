@@ -1,6 +1,5 @@
 /**
  * Meal photo -> structured calorie estimate, via the key-holding proxy.
- * Also exposes a mock predictor so the UI can be tested without an API key.
  *
  * Swap-point for the future: `predictMeal` is the only function the app calls. The call goes
  * through the proxy (proxy/); to use an agent instead (docs/AGENTIC_AI.md) only this file changes.
@@ -88,30 +87,5 @@ function normalize(raw) {
     fatG: Math.round(num(raw.fatG)),
     ingredients: items.map((i) => i.name),
     notes: String(raw.notes || ''),
-  };
-}
-
-/**
- * Fake prediction for demo mode – lets you test the whole flow without a key.
- * @returns {Promise<MealPrediction>}
- */
-export async function mockPredictMeal() {
-  await new Promise((r) => setTimeout(r, 900)); // simulate latency
-  return {
-    mealName: 'Mixed veggie power bowl (demo)',
-    calories: 450,
-    confidence: 0.82,
-    proteinG: 18,
-    carbsG: 32,
-    fatG: 14,
-    items: [
-      { name: 'quinoa', grams: 120, calories: 144 },
-      { name: 'roasted vegetables', grams: 150, calories: 110 },
-      { name: 'chickpeas', grams: 80, calories: 100 },
-      { name: 'avocado', grams: 50, calories: 80 },
-      { name: 'hummus', grams: 30, calories: 16 },
-    ],
-    ingredients: ['quinoa', 'roasted vegetables', 'chickpeas', 'avocado', 'hummus'],
-    notes: 'Demo data – turn on API Mode and add a Gemini key for a real estimate.',
   };
 }

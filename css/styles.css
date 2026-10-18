@@ -44,6 +44,7 @@ button { font: inherit; cursor: pointer; }
 .brand h1 { font-size: 2.2rem; color: var(--green-800); letter-spacing: -.5px; line-height: 1; }
 .tagline { color: var(--text); font-size: .95rem; }
 .section-title { font-size: 1.3rem; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 /* ---------- capture ---------- */
 .capture { display: grid; gap: 18px; }
@@ -61,22 +62,6 @@ button { font: inherit; cursor: pointer; }
 .dropzone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 .controls { display: grid; gap: 12px; }
-.mode { display: flex; align-items: center; gap: 12px; }
-.mode__label { font-size: 1.3rem; font-weight: 700; }
-.mode__text { color: var(--muted); font-size: .85rem; margin-top: -6px; }
-
-/* toggle switch */
-.switch { position: relative; display: inline-block; width: 66px; height: 36px; }
-.switch input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
-.switch__track { position: absolute; inset: 0; border-radius: 99px; background: #b9c3bb; transition: background .2s; }
-.switch__track::after {
-  content: ""; position: absolute; top: 4px; left: 4px; width: 28px; height: 28px;
-  border-radius: 50%; background: #fff; transition: transform .2s;
-}
-.switch input:checked + .switch__track { background: var(--green-800); }
-.switch input:checked + .switch__track::after { transform: translateX(30px); }
-.switch input:focus-visible + .switch__track { outline: 3px solid var(--green-500); outline-offset: 2px; }
-
 /* service pills */
 .services { display: grid; gap: 10px; }
 .service {
@@ -137,6 +122,12 @@ button { font: inherit; cursor: pointer; }
 .footer__icons { display: flex; gap: 8px; }
 .icon-btn { background: none; border: 0; padding: 4px; color: var(--green-800); border-radius: 8px; }
 .icon-btn:hover { background: var(--cream-dark); }
+.icon-btn:focus-visible { outline: 3px solid var(--green-500); outline-offset: 2px; }
+.icon-btn--round { width: 44px; height: 44px; display: grid; place-items: center; border: 1.5px solid var(--green-800); border-radius: 50%; background: var(--cream); }
+.icon-btn--round:hover { background: var(--green-800); color: #fff; }
+.icon-btn--round svg { transition: transform .4s ease; }
+.icon-btn--round:hover svg { transform: rotate(-180deg); }
+@media (prefers-reduced-motion: reduce) { .icon-btn--round svg { transition: none; } }
 .footer__status p { color: var(--muted); font-size: .9rem; }
 .footer__status.is-error strong, .footer__status.is-error p { color: #b3261e; }
 

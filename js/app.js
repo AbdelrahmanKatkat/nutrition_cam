@@ -2,14 +2,14 @@
  * App entry point: wires the DOM events to the services and the UI.
  *
  * Flow of "Scan Now":
- *   photo -> (Gemini | mock) -> meal estimate
+ *   photo (+ optional description) -> Gemini via proxy -> meal estimate
  *         -> (Open Food Facts by barcode, else by meal name) -> product facts
  *         -> render + save to history
  *
  * @module app
  */
 
-import { predictMeal, mockPredictMeal, RateLimitError } from './services/gemini.js';
+import { predictMeal, RateLimitError } from './services/gemini.js';
 import { CONFIG } from './config.js';
 import { getProductByBarcode, searchProduct } from './services/openfoodfacts.js';
 import { prepareImage, makeThumbnail, detectBarcode } from './services/image.js';
@@ -23,10 +23,8 @@ const state = { image: null, file: null };
 const settings = store.loadSettings();
 
 // ---------- init ----------
-$('api-toggle').checked = settings.apiMode;
 $('use-gemini').checked = settings.useGemini;
 $('use-off').checked = settings.useOff;
-ui.setModeText(settings.apiMode);
 
 /** Timestamp (ms) before which a live Gemini call is not allowed (cooldown / 429 back-off). */
 let blockedUntil = 0;
@@ -53,13 +51,21 @@ document.querySelector('.hint-chips').addEventListener('click', (e) => {
   syncHint();
 });
 
-$('api-toggle').addEventListener('change', (e) => {
-  settings.apiMode = e.target.checked;
-  store.saveSettings({ apiMode: settings.apiMode });
-  ui.setModeText(settings.apiMode);
-});
 $('use-gemini').addEventListener('change', (e) => store.saveSettings({ useGemini: e.target.checked }));
 $('use-off').addEventListener('change', (e) => store.saveSettings({ useOff: e.target.checked }));
+
+// "New item": drop the photo, description, barcode and results so the next meal starts clean.
+$('new-btn').addEventListener('click', () => {
+  state.image = null;
+  state.file = null;
+  $('photo-input').value = ''; // lets the same file be picked again
+  $('barcode').value = '';
+  hintBox.value = '';
+  syncHint();
+  ui.resetPreview();
+  ui.resetResults();
+  ui.setStatus('Ready to scan.', 'Snap your meal or look up a barcode.');
+});
 
 $('help-btn').addEventListener('click', () => $('settings-dialog').showModal());
 $('history-btn').addEventListener('click', () => {
@@ -98,36 +104,28 @@ async function onScan() {
   const hint = $('meal-hint').value.trim();
   const useGemini = $('use-gemini').checked;
   const useOff = $('use-off').checked;
-  const live = settings.apiMode;
 
   if (!state.image && !barcode && !(hint && useOff)) {
     return ui.setStatus('Nothing to scan.', 'Add a photo, type a barcode or describe the food first.', true);
   }
-  const callsGemini = live && useGemini && state.image;
+  const callsGemini = useGemini && state.image;
   if (callsGemini && Date.now() < blockedUntil) {
     const s = Math.ceil((blockedUntil - Date.now()) / 1000);
     return ui.setStatus('Please wait.', `Next scan available in ${s}s (protects the AI quota).`, true);
   }
 
   ui.setBusy(true);
-  ui.setStatus('Scanning…', live ? 'Contacting the services.' : 'Using demo data.');
+  ui.setStatus('Scanning…', 'Contacting the services.');
+  ui.resetResults(); // a re-run must not leave stale results behind (the photo stays loaded)
 
   try {
-    // Barcode lookup with no Gemini: make sure we tried to read the photo first.
-    if (useOff && !barcode && state.file) {
-      barcode = (await detectBarcode(state.file)) || '';
-      if (barcode) $('barcode').value = barcode;
-    }
-
     let meal = null;
     let product = null;
 
     // 1) Meal estimate (needs a photo)
     if (useGemini && state.image) {
-      if (live) blockedUntil = Date.now() + CONFIG.scan.cooldownMs;
-      meal = live
-        ? await predictMeal(state.image, hint)
-        : await mockPredictMeal();
+      blockedUntil = Date.now() + CONFIG.scan.cooldownMs;
+      meal = await predictMeal(state.image, hint);
       ui.renderMeal(meal, state.image.dataUrl);
     } else if (state.image) {
       ui.renderMeal(null, state.image.dataUrl);
@@ -137,9 +135,7 @@ async function onScan() {
     let offFailed = false;
     if (useOff) {
       try {
-        if (!live) {
-          product = mockProduct(barcode);
-        } else if (barcode) {
+        if (barcode) {
           product = await getProductByBarcode(barcode);
         } else if (meal && meal.calories > 0) {
           product = await searchProduct(meal.mealName);
@@ -198,17 +194,4 @@ async function saveToHistory(meal, product) {
     calories: meal?.calories,
     productName: product?.name,
   });
-}
-
-/** Demo product so the Open Food Facts card can be styled/tested offline. */
-function mockProduct(barcode) {
-  return {
-    code: barcode || '0000000000000',
-    name: 'Demo granola bar',
-    brand: 'NutriSnap Demo',
-    nutriScore: 'a',
-    per100g: { kcal: 380, protein: 9, carbs: 58, fat: 12 },
-    labels: ['Organic', 'No added sugar', 'High fibre'],
-    image: '',
-  };
 }

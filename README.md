@@ -7,9 +7,9 @@ A static, no-build web app. Take or upload a meal photo on your phone, and:
 
 Design reference: [`docs/design-reference.jpg`](docs/design-reference.jpg).
 
-## Try it now (no API key needed)
+## Run it locally
 
-The app starts in **Demo mode**: the AI and product lookups return fake data so you can test the full flow and UI.
+Deploy the proxy first ([`proxy/README.md`](proxy/README.md)) and set `proxy.url` in `js/config.js`; the page needs it for AI estimates. Barcode lookups work without it.
 
 ```bash
 # ES modules need http://, not file://
@@ -27,7 +27,7 @@ Cloudflare Worker ([`proxy/`](proxy/README.md)) that the page calls.
 
 1. Get a key at [Google AI Studio](https://aistudio.google.com/apikey).
 2. Deploy the proxy and store the key with `npx wrangler secret put GEMINI_API_KEY` – full steps in [`proxy/README.md`](proxy/README.md).
-3. Put the Worker URL in `js/config.js` → `proxy.url`, push, and switch **API Mode** on.
+3. Put the Worker URL in `js/config.js` → `proxy.url` and push.
 
 Open Food Facts needs no key and is called directly from the browser.
 
@@ -52,7 +52,7 @@ js/
   ui.js                     DOM rendering only
   config.js                 model name, URLs, limits, daily values
   services/
-    gemini.js               calls the proxy (timeout, 429 handling) + mock predictor
+    gemini.js               calls the proxy (timeout, 429 handling)
     openfoodfacts.js        barcode lookup + text search
     image.js                resize photo, barcode detection
     storage.js              localStorage: settings + history
@@ -68,7 +68,7 @@ docs/
 ### Scan flow
 
 ```
-photo ─► resize ─► proxy ─► Gemini (or mock) ─► meal name, kcal, macros
+photo ─► resize ─► proxy ─► Gemini ─► meal name, kcal, macros
                                          │
 barcode (typed / detected) ─────────────►├─► Open Food Facts ─► Nutri-Score, labels, per-100g
                                          ▼

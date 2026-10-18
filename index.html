@@ -21,7 +21,12 @@
         </div>
       </header>
 
-      <h2 class="section-title">Camera / Upload</h2>
+      <div class="section-head">
+        <h2 class="section-title">Camera / Upload</h2>
+        <button id="new-btn" class="icon-btn icon-btn--round" type="button" aria-label="New item" title="New item">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </button>
+      </div>
 
       <div class="capture">
         <!-- capture="environment" opens the rear camera on mobile; the user can still pick from gallery -->
@@ -35,15 +40,6 @@
         </button>
 
         <div class="controls">
-          <div class="mode">
-            <span class="mode__label" id="mode-label">API Mode:</span>
-            <label class="switch">
-              <input id="api-toggle" type="checkbox" role="switch" aria-labelledby="mode-label">
-              <span class="switch__track"></span>
-            </label>
-          </div>
-          <p id="mode-text" class="mode__text">Demo mode (no API calls)</p>
-
           <div class="services">
             <label class="service service--gemini">
               <input id="use-gemini" type="checkbox" checked>
@@ -154,9 +150,9 @@
   <dialog id="settings-dialog">
     <form method="dialog" class="dialog">
       <h2>Help &amp; Settings</h2>
-      <p><b>Meal photo:</b> tick Gemini AI, add a photo, press <b>Scan Now</b> (needs API Mode on).</p>
+      <p><b>Meal photo:</b> tick Gemini AI, add a photo, press <b>Scan Now</b>.</p>
       <p><b>Packaged food:</b> photograph the barcode (or type its digits), tick Open Food Facts, press <b>Scan Now</b>.</p>
-      <p>With API Mode off you get demo data so you can test the interface.</p>
+      <p>Tap the refresh icon next to <b>Camera / Upload</b> to start a new item. Until you do, your photo stays loaded: edit the description and press <b>Scan Now</b> again to re-run.</p>
       <p class="warn">The Gemini key is held by a server-side proxy, never in this page. Scans are limited to protect the quota; if you hit the limit, wait for the countdown.</p>
       <div class="dialog__actions">
         <button class="btn btn--dark" value="close">Close</button>

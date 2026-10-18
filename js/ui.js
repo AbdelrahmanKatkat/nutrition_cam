@@ -37,8 +37,31 @@ export function setBusy(busy) {
   btn.textContent = busy ? 'Scanning…' : 'Scan Now';
 }
 
-export function setModeText(apiMode) {
-  $('mode-text').textContent = apiMode ? 'Live mode (calls Gemini / Open Food Facts)' : 'Demo mode (no API calls)';
+/** Put the photo box back to its empty state. */
+export function resetPreview() {
+  $('preview').removeAttribute('src');
+  $('preview').hidden = true;
+  $('dropzone-hint').hidden = false;
+}
+
+/** Clear every result card (keeps the chosen photo in the capture box). */
+export function resetResults() {
+  $('result-photo').removeAttribute('src');
+  $('result-photo').hidden = true;
+  $('result-placeholder').hidden = false;
+  for (const id of ['meal-name', 'meal-items', 'meal-notes', 'confidence-pct', 'breakdown-basis']) $(id).textContent = '';
+  $('meal-name').textContent = '—';
+  $('kcal').textContent = '—';
+  $('confidence-bar').style.width = '0';
+  for (const key of ['cal', 'pro', 'carb', 'fat']) {
+    $(`b-${key}`).textContent = '—';
+    $(`bar-${key}`).style.width = '0';
+  }
+  $('grade').textContent = '—';
+  $('grade').dataset.grade = '';
+  $('off-product').textContent = 'No product looked up yet.';
+  $('badges').innerHTML = '';
+  $('barcode-info').textContent = '—';
 }
 
 /** @param {import('./services/gemini.js').MealPrediction|null} meal */
