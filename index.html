@@ -64,6 +64,31 @@
         </div>
       </div>
 
+      <!-- Optional text hint: narrows the AI estimate (and the Open Food Facts search when Gemini is off) -->
+      <section class="hint-card" aria-labelledby="hint-title">
+        <div class="hint-card__head">
+          <h2 id="hint-title" class="section-title">What's on your plate?</h2>
+          <span class="hint-card__tag">optional</span>
+        </div>
+        <p class="hint-card__help">Name the ingredients, how it was cooked or the portion. The more specific, the tighter the estimate.</p>
+        <textarea id="meal-hint" rows="5" maxlength="300"
+          placeholder="e.g. 2 fried eggs, 2 slices whole-wheat toast, half an avocado, cooked in olive oil"></textarea>
+        <div class="hint-chips" role="group" aria-label="Quick add to description">
+          <button type="button" class="chip" data-add="Grilled">Grilled</button>
+          <button type="button" class="chip" data-add="Fried">Fried</button>
+          <button type="button" class="chip" data-add="Baked">Baked</button>
+          <button type="button" class="chip" data-add="Homemade">Homemade</button>
+          <button type="button" class="chip" data-add="Restaurant portion">Restaurant portion</button>
+          <button type="button" class="chip" data-add="Cooked in olive oil">Olive oil</button>
+          <button type="button" class="chip" data-add="Large portion">Large portion</button>
+          <button type="button" class="chip" data-add="No sugar added">No sugar</button>
+        </div>
+        <div class="hint-card__foot">
+          <span id="hint-count" class="hint-card__count">0 / 300</span>
+          <button id="hint-clear" class="link-btn" type="button">Clear</button>
+        </div>
+      </section>
+
       <footer class="footer">
         <nav class="footer__nav" aria-label="Help and history">
           <strong>Help/History</strong>

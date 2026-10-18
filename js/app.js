@@ -36,6 +36,23 @@ $('photo-btn').addEventListener('click', () => $('photo-input').click());
 $('photo-input').addEventListener('change', onPhotoChosen);
 $('scan-btn').addEventListener('click', onScan);
 
+// Meal description: live counter, quick-add chips, clear
+const hintBox = $('meal-hint');
+const syncHint = () => {
+  $('hint-count').textContent = `${hintBox.value.length} / ${hintBox.maxLength}`;
+  const text = hintBox.value.toLowerCase();
+  document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('is-on', text.includes(c.dataset.add.toLowerCase())));
+};
+hintBox.addEventListener('input', syncHint);
+$('hint-clear').addEventListener('click', () => { hintBox.value = ''; syncHint(); hintBox.focus(); });
+document.querySelector('.hint-chips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip || hintBox.value.toLowerCase().includes(chip.dataset.add.toLowerCase())) return;
+  const sep = hintBox.value.trim() ? ', ' : '';
+  hintBox.value = `${hintBox.value.trim()}${sep}${chip.dataset.add.toLowerCase()}`.slice(0, hintBox.maxLength);
+  syncHint();
+});
+
 $('api-toggle').addEventListener('change', (e) => {
   settings.apiMode = e.target.checked;
   store.saveSettings({ apiMode: settings.apiMode });
@@ -78,12 +95,13 @@ async function onPhotoChosen(e) {
 
 async function onScan() {
   let barcode = $('barcode').value.trim();
+  const hint = $('meal-hint').value.trim();
   const useGemini = $('use-gemini').checked;
   const useOff = $('use-off').checked;
   const live = settings.apiMode;
 
-  if (!state.image && !barcode) {
-    return ui.setStatus('Nothing to scan.', 'Add a photo or type a barcode first.', true);
+  if (!state.image && !barcode && !(hint && useOff)) {
+    return ui.setStatus('Nothing to scan.', 'Add a photo, type a barcode or describe the food first.', true);
   }
   const callsGemini = live && useGemini && state.image;
   if (callsGemini && Date.now() < blockedUntil) {
@@ -108,7 +126,7 @@ async function onScan() {
     if (useGemini && state.image) {
       if (live) blockedUntil = Date.now() + CONFIG.scan.cooldownMs;
       meal = live
-        ? await predictMeal(state.image)
+        ? await predictMeal(state.image, hint)
         : await mockPredictMeal();
       ui.renderMeal(meal, state.image.dataUrl);
     } else if (state.image) {
@@ -125,6 +143,8 @@ async function onScan() {
           product = await getProductByBarcode(barcode);
         } else if (meal && meal.calories > 0) {
           product = await searchProduct(meal.mealName);
+        } else if (hint) {
+          product = await searchProduct(hint); // Gemini off: the description narrows the database search
         }
       } catch (err) {
         console.warn(err); // Open Food Facts is community-run and sometimes returns 5xx

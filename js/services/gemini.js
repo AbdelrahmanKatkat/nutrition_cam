@@ -36,10 +36,11 @@ export class RateLimitError extends Error {
  * Ask the proxy (which calls Gemini with the secret key) to analyse a meal photo.
  * The prompt and response schema live in proxy/src/index.js.
  * @param {{base64:string, mimeType:string}} image
+ * @param {string} [hint] optional user description of the components ("2 eggs, toast, olive oil")
  * @returns {Promise<MealPrediction>}
  * @throws {RateLimitError} on HTTP 429
  */
-export async function predictMeal(image) {
+export async function predictMeal(image, hint = '') {
   const { url, timeoutMs } = CONFIG.proxy;
   if (!url) throw new Error('Proxy URL not set. Deploy the proxy (proxy/README.md) and set proxy.url in js/config.js.');
 
@@ -48,7 +49,7 @@ export async function predictMeal(image) {
     res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: image.base64, mimeType: image.mimeType }),
+      body: JSON.stringify({ image: image.base64, mimeType: image.mimeType, hint }),
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (err) {
@@ -80,7 +81,8 @@ function normalize(raw) {
     mealName: String(raw.mealName || 'Unknown meal'),
     items,
     calories: itemSum > 0 ? itemSum : Math.round(num(raw.calories)),
-    confidence: Math.min(1, num(raw.confidence)),
+    // "No food detected" must not show a high confidence bar (models sometimes report confidence in the *absence*).
+    confidence: itemSum > 0 || num(raw.calories) > 0 ? Math.min(1, num(raw.confidence)) : 0,
     proteinG: Math.round(num(raw.proteinG)),
     carbsG: Math.round(num(raw.carbsG)),
     fatG: Math.round(num(raw.fatG)),

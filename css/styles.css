@@ -101,6 +101,36 @@ button { font: inherit; cursor: pointer; }
 .btn--light { background: var(--cream-dark); color: var(--green-800); }
 .btn--block { width: 100%; font-size: 1.1rem; }
 
+/* ---------- meal hint card ---------- */
+.hint-card {
+  flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 260px;
+  padding: 18px; border-radius: var(--radius); background: var(--cream-dark);
+  border: 1.5px solid rgb(27 77 50 / .18);
+}
+.hint-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hint-card__tag {
+  padding: 2px 10px; border-radius: 99px; background: var(--cream); color: var(--muted);
+  font-size: .75rem; font-weight: 600; border: 1px solid #c8cfc6;
+}
+.hint-card__help { color: var(--muted); font-size: .9rem; }
+.hint-card textarea {
+  flex: 1; min-height: 110px; resize: vertical; padding: 12px 14px;
+  border: 1.5px solid #c8cfc6; border-radius: 12px; background: #fff;
+  font: inherit; line-height: 1.45; color: var(--text);
+}
+.hint-card textarea:focus { outline: 3px solid var(--green-500); outline-offset: 1px; border-color: var(--green-800); }
+.hint-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 6px 12px; border: 1.5px solid var(--green-800); border-radius: 99px;
+  background: var(--cream); color: var(--green-800); font-size: .85rem; font-weight: 600;
+}
+.chip:hover { background: var(--green-100); }
+.chip:focus-visible, .link-btn:focus-visible { outline: 3px solid var(--green-500); outline-offset: 2px; }
+.chip.is-on { background: var(--green-800); color: #fff; }
+.hint-card__foot { display: flex; justify-content: space-between; align-items: center; }
+.hint-card__count { color: var(--muted); font-size: .8rem; }
+.link-btn { background: none; border: 0; padding: 4px 6px; color: var(--green-800); font-weight: 700; text-decoration: underline; border-radius: 6px; }
+
 /* ---------- footer ---------- */
 .footer { margin-top: auto; display: flex; gap: 20px; align-items: center; padding-top: 12px; }
 .footer__nav { display: grid; gap: 6px; padding-right: 20px; border-right: 1px solid #d3d6c8; }
