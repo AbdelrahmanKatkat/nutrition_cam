@@ -29,15 +29,22 @@
       </div>
 
       <div class="capture">
-        <!-- capture="environment" opens the rear camera on mobile; the user can still pick from gallery -->
-        <input id="photo-input" type="file" accept="image/*" capture="environment" hidden>
-        <button id="photo-btn" class="dropzone" type="button" aria-label="Take photo or upload meal">
-          <img id="preview" alt="Meal preview" hidden>
-          <span id="dropzone-hint" class="dropzone__hint">
-            <svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
-            <span class="btn btn--dark">Take Photo or Upload Meal</span>
-          </span>
-        </button>
+        <!-- capture="environment" forces the camera on phones; the upload input omits it so the gallery and files open -->
+        <input id="camera-input" type="file" accept="image/*" capture="environment" hidden>
+        <input id="upload-input" type="file" accept="image/*" hidden>
+        <div class="photo-box">
+          <div id="dropzone" class="dropzone">
+            <img id="preview" alt="Meal preview" hidden>
+            <div id="dropzone-hint" class="dropzone__hint">
+              <svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+              <span>Add a photo of your meal</span>
+            </div>
+          </div>
+          <div class="photo-actions">
+            <button id="camera-btn" class="btn btn--dark" type="button">Take photo</button>
+            <button id="upload-btn" class="btn btn--light" type="button">Upload photo</button>
+          </div>
+        </div>
 
         <div class="controls">
           <div class="services">

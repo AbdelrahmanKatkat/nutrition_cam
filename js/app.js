@@ -30,8 +30,11 @@ $('use-off').checked = settings.useOff;
 let blockedUntil = 0;
 
 // ---------- events ----------
-$('photo-btn').addEventListener('click', () => $('photo-input').click());
-$('photo-input').addEventListener('change', onPhotoChosen);
+// Two ways in: the camera input opens the rear camera on phones; the upload input opens the gallery or files.
+$('camera-btn').addEventListener('click', () => $('camera-input').click());
+$('upload-btn').addEventListener('click', () => $('upload-input').click());
+$('camera-input').addEventListener('change', onPhotoChosen);
+$('upload-input').addEventListener('change', onPhotoChosen);
 $('scan-btn').addEventListener('click', onScan);
 
 // Meal description: live counter, quick-add chips, clear
@@ -58,7 +61,8 @@ $('use-off').addEventListener('change', (e) => store.saveSettings({ useOff: e.ta
 $('new-btn').addEventListener('click', () => {
   state.image = null;
   state.file = null;
-  $('photo-input').value = ''; // lets the same file be picked again
+  $('camera-input').value = ''; // lets the same file be picked again
+  $('upload-input').value = '';
   $('barcode').value = '';
   hintBox.value = '';
   syncHint();

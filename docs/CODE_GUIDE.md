@@ -1,4 +1,4 @@
-# NutriSnap – Code Guide
+﻿# NutriSnap – Code Guide
 
 A file-by-file walkthrough of the code: what each piece does, how data moves through it, and why it was built that way. Diagrams use Mermaid and render on GitHub.
 
@@ -132,7 +132,7 @@ What happens when you pick or take a photo.
 
 ```mermaid
 flowchart TD
-    P["User taps 'Take Photo or Upload Meal'"] --> FI["hidden &lt;input type=file capture&gt;<br/>opens camera or gallery"]
+    P["User taps Take photo or Upload photo"] --> FI["hidden &lt;input type=file&gt;: camera (capture) or gallery (no capture)"]
     FI --> OPC["app.js onPhotoChosen(file)"]
     OPC --> PI["image.js prepareImage(file)"]
     PI --> DEC{"createImageBitmap<br/>can decode?"}
@@ -297,13 +297,13 @@ Worst case is about 50 s, which is why the browser waits up to 60 s. A 429 is ne
 **Purpose:** the page skeleton. It holds no logic, only named elements that `app.js` and `ui.js` find by id.
 
 Layout, top to bottom:
-- **Left panel (input):** brand, *Camera / Upload* heading with the **New item** refresh button, the photo dropzone, the service ticks, the barcode field, **Scan Now**, the *What's on your plate?* description card, and the footer with the Help and History icons and the status line.
+- **Left panel (input):** brand, *Camera / Upload* heading with the **New item** refresh button, the photo dropzone with **Take photo** and **Upload photo** buttons, the service ticks, the barcode field, **Scan Now**, the *What's on your plate?* description card, and the footer with the Help and History icons and the status line.
 - **Right panel (results):** *Detected Meal* card (photo, name, kcal, confidence, items, notes) and *Nutritional Facts* card (Nutri-Score, four breakdown bars, Open Food Facts labels, barcode).
 - **Two dialogs:** Help (`#settings-dialog`) and History (`#history-dialog`). They use the native `<dialog>` element, so they need no JavaScript to open and close.
 
 **Why ids everywhere:** the JS needs stable handles. Using `getElementById` avoids a framework and keeps the markup readable.
 
-**Why `capture="environment"`:** on phones this opens the rear camera directly. The gallery is still available.
+**Why two inputs:** `capture="environment"` opens the rear camera on phones, but it also blocks the gallery. The **Upload** input omits it so the gallery and files open instead.
 
 ### 8.2 `css/styles.css`
 
