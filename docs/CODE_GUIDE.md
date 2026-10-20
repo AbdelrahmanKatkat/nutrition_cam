@@ -278,15 +278,15 @@ gantt
     dateFormat  s
     axisFormat  %Ss
     section Primary
-    attempt 1 (≤15 s)      :a1, 0, 15s
+    attempt 1 (≤25 s)      :a1, 0, 15s
     back-off 1.5 s         :b1, after a1, 2s
-    attempt 2 (≤15 s)      :a2, after b1, 15s
+    attempt 2 (≤25 s)      :a2, after b1, 15s
     back-off 3 s           :b2, after a2, 3s
     section Fallback
-    attempt 3 (≤15 s)      :a3, after b2, 15s
+    attempt 3 (≤25 s)      :a3, after b2, 15s
 ```
 
-Worst case is about 50 s, which is why the browser waits up to 60 s. A 429 is never retried, because retrying would only spend more quota.
+All attempts share one 50 s budget, so the Worker always replies before the browser's 60 s limit. Each attempt gets whatever time is left. A 429 is never retried, because retrying would only spend more quota.
 
 ---
 

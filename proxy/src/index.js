@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NutriSnap proxy – Cloudflare Worker that keeps the Gemini API key server-side.
  *
  *   Browser ──POST {image, mimeType}──► this Worker ──(x-goog-api-key: secret)──► Gemini
@@ -14,9 +14,10 @@
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BASE64_CHARS = 4_000_000;   // ≈ 3 MB image; the client already downsizes to ~1024 px
-const UPSTREAM_TIMEOUT_MS = 20_000;   // give up on Gemini after 20 s
 const DEFAULT_RETRY_AFTER_S = 30;     // Gemini doesn't document a Retry-After header
-const ATTEMPT_TIMEOUT_MS = 15_000;    // per Gemini call; worst case with retries stays under the browser's 60 s
+const ATTEMPT_TIMEOUT_MS = 25_000;   // longest single Gemini call (images with a slow model can take 15-25 s)
+const TOTAL_BUDGET_MS = 50_000;       // all attempts together; the browser waits 60 s, so this leaves room to reply
+const MIN_ATTEMPT_MS = 5_000;         // don't start an attempt with less time than this
 const RETRY_DELAYS_MS = [1500, 3000]; // back-off before attempts 2 and 3
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]); // Gemini "busy" / transient errors
 
@@ -125,7 +126,8 @@ export default {
     // --- call Gemini: retry busy/transient errors, then fall back to a second model ---
     const primary = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
     const fallback = env.GEMINI_FALLBACK_MODEL || 'gemini-3.8-flash';
-    const attempts = [primary, primary, fallback];
+    // Busy main model -> try the fallback next (different capacity), then the main model again if time remains.
+    const attempts = [primary, fallback, primary];
     const payload = JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: image } }, { text: buildUserPrompt(hint) }] }],
@@ -133,14 +135,17 @@ export default {
       generationConfig: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
     });
 
+    const deadline = Date.now() + TOTAL_BUDGET_MS;
     let upstream = null;
     for (let i = 0; i < attempts.length; i++) {
       if (i > 0) await sleep(RETRY_DELAYS_MS[i - 1]);
+      const remaining = deadline - Date.now();
+      if (remaining < MIN_ATTEMPT_MS) break; // out of time: reply rather than wait on Gemini
       try {
         upstream = await fetch(`${GEMINI_BASE}/${attempts[i]}:generateContent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-          signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+          signal: AbortSignal.timeout(Math.min(ATTEMPT_TIMEOUT_MS, remaining)),
           body: payload,
         });
       } catch (err) {
@@ -160,7 +165,7 @@ export default {
       console.warn('Gemini busy', attempts[i], upstream.status, 'attempt', i + 1);
     }
 
-    if (!upstream) return reply({ error: 'Could not reach Gemini' }, 502);
+    if (!upstream) return reply({ error: 'Gemini did not respond in time. Please try again.' }, 504);
     if (RETRYABLE_STATUS.has(upstream.status)) {
       return reply({ error: 'Gemini is busy right now. Please try again in a moment.' }, 503, { 'Retry-After': '20' });
     }
