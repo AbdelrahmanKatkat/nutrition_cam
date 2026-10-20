@@ -45,7 +45,7 @@ export const CONFIG = {
    * Create a site in Cloudflare dashboard → Analytics & Logs → Web Analytics, then paste its token here.
    * Leave empty to load no analytics script at all.
    */
-  webAnalyticsToken: '',
+  webAnalyticsToken: '4656c232b8a843d0b1d1fb63df114a40',
 
   /** Max items kept in the local scan history. */
   historyLimit: 20,
