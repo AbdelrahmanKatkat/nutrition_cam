@@ -80,13 +80,13 @@ const RESPONSE_SCHEMA = {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Count one successful scan in Analytics Engine (env.SCANS). Only the outcome is stored:
+ * Count one successful scan in Analytics Engine (env.ANALYTICS_ENGINE). Only the outcome is stored:
  * no IP address, no photo, no hint, no cookie. Failures here must never break a scan.
  */
 function recordScan(env, isFood) {
   try {
     const outcome = isFood ? 'food' : 'not_food';
-    env.SCANS?.writeDataPoint({ blobs: [outcome], doubles: [1], indexes: [outcome] });
+    env.ANALYTICS_ENGINE?.writeDataPoint({ blobs: [outcome], doubles: [1], indexes: [outcome] });
   } catch { /* analytics is optional */ }
 }
 
