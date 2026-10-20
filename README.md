@@ -36,6 +36,15 @@ NutriSnap guards against that at three levels: an 8 s cooldown between scans in 
 a per-IP limit in the Worker, and a clear "try again in Ns" message when a 429 comes back. Requests also time out after 25 s.
 Check your real limits in [AI Studio](https://aistudio.google.com/rate-limit).
 
+## Privacy and analytics
+
+- **Photos go to Google Gemini** on every AI scan (through the Worker). Show a notice to visitors before a public launch.
+- **No cookies.** The site stores only settings and scan history in the visitor's own browser (`localStorage`).
+- **Counters without personal data.** Cloudflare Web Analytics (visits, countries, devices) is cookie-free, and the Worker counts each successful scan as food or not food, with no IP address, photo or description.
+- Setup for the analytics: see the comments in `js/config.js` (`webAnalyticsToken`) and `proxy/wrangler.toml` (`SCANS`).
+
+Details are in [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md#6-privacy).
+
 ## Deploy to GitHub Pages
 
 1. Push this repo to GitHub.

@@ -47,4 +47,21 @@ The Worker has an origin allow-list, per-IP rate limit, payload validation and a
 
 ## 6. Privacy
 
-Photos are sent to Google on every AI scan. Add a one-time consent notice, and mention it in a privacy section of the README if the site is public. History stores only small thumbnails, locally.
+**What is collected, and where**
+
+| Data | Where | Kept by | Personal? |
+|---|---|---|---|
+| Meal photo | Sent to the Worker, then to Google Gemini. Not stored by the Worker. | Google, under its API terms | Yes |
+| Meal description | Sent with the photo | Google, under its API terms | Possibly |
+| Scan history (thumbnail, name, kcal) | Browser `localStorage` only | The visitor's browser | Yes, on the device only |
+| Settings (two service ticks) | Browser `localStorage` only | The visitor's browser | No |
+| Scan counter | Cloudflare Analytics Engine: one data point per successful scan (food / not food). No IP address, photo, description or cookie. | Cloudflare | No |
+| Page visits, countries, devices | Cloudflare Web Analytics: cookie-free beacon. No personal data. | Cloudflare | No |
+
+**No cookies are set by the site, the Worker or the analytics.** Browser storage (`localStorage`) is used only on the device.
+
+**Still to do before a public launch**
+- Add a short consent notice before the first AI scan: photos are sent to Google.
+- Tell visitors about the counters in the README privacy section, as above.
+- Set `ALLOW_LOCALHOST` to `"false"` in `proxy/wrangler.toml`.
+- Consider a retention setting for the Analytics Engine dataset.

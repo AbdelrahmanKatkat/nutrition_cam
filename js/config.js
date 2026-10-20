@@ -40,6 +40,13 @@ export const CONFIG = {
   /** Reference daily values used to scale the breakdown bars (adult, 2000 kcal diet). */
   dailyValues: { kcal: 2000, protein: 50, carbs: 275, fat: 78 },
 
+  /**
+   * Cloudflare Web Analytics: cookie-free visit, country and device stats.
+   * Create a site in Cloudflare dashboard → Analytics & Logs → Web Analytics, then paste its token here.
+   * Leave empty to load no analytics script at all.
+   */
+  webAnalyticsToken: '',
+
   /** Max items kept in the local scan history. */
   historyLimit: 20,
 };

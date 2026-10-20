@@ -24,4 +24,9 @@ namespace_id = "1001"
   limit = 5
   period = 60
 
+# Scan counter: one data point per successful scan (outcome only). Query it in the Cloudflare dashboard.
+[[analytics_engine_datasets]]
+binding = "SCANS"
+dataset = "nutrisnap_scans"
+
 # The API key is NOT here. Set it as a secret:  npx wrangler secret put GEMINI_API_KEY

@@ -79,6 +79,17 @@ const RESPONSE_SCHEMA = {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Count one successful scan in Analytics Engine (env.SCANS). Only the outcome is stored:
+ * no IP address, no photo, no hint, no cookie. Failures here must never break a scan.
+ */
+function recordScan(env, isFood) {
+  try {
+    const outcome = isFood ? 'food' : 'not_food';
+    env.SCANS?.writeDataPoint({ blobs: [outcome], doubles: [1], indexes: [outcome] });
+  } catch { /* analytics is optional */ }
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -179,7 +190,9 @@ export default {
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) return reply({ error: 'Gemini returned no content (image may have been blocked)' }, 502);
     try {
-      return reply({ prediction: JSON.parse(text) });
+      const prediction = JSON.parse(text);
+      recordScan(env, prediction.isFood !== false);
+      return reply({ prediction });
     } catch {
       return reply({ error: 'Gemini returned invalid JSON' }, 502);
     }

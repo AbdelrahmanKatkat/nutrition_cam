@@ -23,6 +23,7 @@ const state = { image: null, file: null };
 const settings = store.loadSettings();
 
 // ---------- init ----------
+loadWebAnalytics(CONFIG.webAnalyticsToken);
 $('use-gemini').checked = settings.useGemini;
 $('use-off').checked = settings.useOff;
 
@@ -191,6 +192,16 @@ async function onScan() {
   } finally {
     ui.setBusy(false);
   }
+}
+
+/** Cookie-free page analytics. Loads nothing unless a token is configured. */
+function loadWebAnalytics(token) {
+  if (!token) return;
+  const script = document.createElement('script');
+  script.defer = true;
+  script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  script.dataset.cfBeacon = JSON.stringify({ token });
+  document.head.appendChild(script);
 }
 
 async function saveToHistory(meal, product) {
