@@ -54,7 +54,7 @@ export function resetResults() {
   }
   $('grade').textContent = '—';
   $('grade').dataset.grade = '';
-  $('off-product').textContent = 'No product looked up yet.';
+  $('off-product').textContent = 'No product scanned yet.';
   $('badges').innerHTML = '';
   $('barcode-info').textContent = '—';
 }

@@ -50,13 +50,12 @@ export const CONFIG = {
   /** NutriChef: free recipe database (TheMealDB, test key 1) and chat/analysis limits. */
   chef: {
     mealdbBase: 'https://www.themealdb.com/api/json/v1/1',
-    /** Minimum gap between two AI requests on the chef page (analysis or chat message). */
-    cooldownMs: 3000,
-    /** Longest chat message the user can send. */
-    maxMessageChars: 400,
     /** How many analysed recipes are remembered in this browser (saves AI calls). */
     cacheSize: 12,
   },
+
+  /** NutriChat (both pages): gap between AI requests, and the longest message a user can send. */
+  chat: { cooldownMs: 3000, maxMessageChars: 400 },
 
   /** Max items kept in the local scan history. */
   historyLimit: 20,

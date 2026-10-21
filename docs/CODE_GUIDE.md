@@ -53,7 +53,7 @@ flowchart LR
 
 ---
 
-> **NutriChef (added later).** The second page, `chef.html`, follows the same pattern (controller `js/chef.js`, view `js/chef-ui.js`, services `mealdb.js` and `chef-ai.js`), shares `proxy.js`, and the Worker was split into `index.js`, `gemini.js`, `tasks.js` and `prompts/`. See [NUTRICHEF.md](NUTRICHEF.md). The sections below describe NutriSnap in detail; the rules (gates, retries, 429 handling, data shapes) apply to both pages.
+> **NutriChef (added later).** The second page, `chef.html`, follows the same pattern (controller `js/chef.js`, view `js/chef-ui.js`, services `mealdb.js` and `chef-ai.js`), shares `proxy.js`, and the Worker was split into `index.js`, `gemini.js`, `tasks.js` and `prompts/`. The chat panel (NutriChat) is shared by both pages: `js/chat.js` and `css/chat.css`, with `js/services/chat-ai.js` for the request. In the interface the AI is branded NutriAI and the chat NutriChat. See [NUTRICHEF.md](NUTRICHEF.md). The sections below describe NutriSnap in detail; the rules (gates, retries, 429 handling, data shapes) apply to both pages.
 
 ## 2. Repository map
 

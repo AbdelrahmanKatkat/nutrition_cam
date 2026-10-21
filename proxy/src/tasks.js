@@ -4,7 +4,7 @@
  * `kind` is the only thing recorded by the optional counter (never user content).
  */
 
-import { SCAN_SYSTEM_PROMPT, SCAN_SCHEMA, buildScanUserPrompt } from './prompts/scan.js';
+import { SCAN_SYSTEM_PROMPT, SCAN_SCHEMA, buildScanUserPrompt, SNAP_CHAT_SYSTEM_PROMPT, buildSnapChatContents } from './prompts/scan.js';
 import {
   ANALYSE_SYSTEM_PROMPT, ANALYSE_SCHEMA, buildAnalyseParts,
   CHAT_SYSTEM_PROMPT, CHAT_SCHEMA, buildChatParts,
@@ -30,6 +30,16 @@ export const TASKS = {
       };
     },
     kind: (result) => (result.isFood === false ? 'not_food' : 'food'),
+  },
+
+  // NutriSnap: chat about the scanned meal (or general nutrition when nothing is scanned)
+  meal_chat: {
+    build({ context, messages }) {
+      const contents = buildSnapChatContents(context, messages);
+      if (!contents) return { error: 'A user message is required', status: 400 };
+      return { system: SNAP_CHAT_SYSTEM_PROMPT, contents, schema: CHAT_SCHEMA };
+    },
+    kind: () => 'chat',
   },
 
   // NutriChef: recipe -> nutrition, vitamins, science, theory, steps

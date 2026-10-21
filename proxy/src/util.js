@@ -26,3 +26,19 @@ export function cleanBlock(value, max) {
     .trim()
     .slice(0, max);
 }
+
+const MAX_HISTORY = 8;      // last N chat messages are sent to the model
+const MAX_MESSAGE = 600;    // characters per message
+
+/**
+ * Clean a chat history from the browser. Returns turns shaped for the model ({role, text}),
+ * starting with a user turn and ending with the user's new message, or null if that is not the case.
+ */
+export function cleanHistory(messages) {
+  const history = (Array.isArray(messages) ? messages : []).slice(-MAX_HISTORY)
+    .map((m) => ({ role: m?.role === 'assistant' ? 'model' : 'user', text: cleanLine(m?.text, MAX_MESSAGE) }))
+    .filter((m) => m.text);
+  while (history.length && history[0].role !== 'user') history.shift(); // the model requires a user turn first
+  if (!history.length || history[history.length - 1].role !== 'user') return null;
+  return history;
+}

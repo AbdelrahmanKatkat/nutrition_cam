@@ -100,7 +100,7 @@ export function fromGenerated(raw) {
     thumb: '',
     category: String(raw.category || ''),
     area: String(raw.area || ''),
-    tags: ['Created by Gemini'],
+    tags: ['Created by NutriAI'],
     ingredients: (Array.isArray(raw.ingredients) ? raw.ingredients : [])
       .map((i) => ({ name: String(i?.name || '').trim(), measure: String(i?.measure || '').trim() }))
       .filter((i) => i.name),

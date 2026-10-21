@@ -19,6 +19,7 @@ import {
 import { analyseRecipe, perServing, chatAboutRecipe, interpretSearch, createRecipe } from './services/chef-ai.js';
 import { RateLimitError } from './services/proxy.js';
 import { findDishPhoto } from './services/photo.js';
+import { setupChat } from './chat.js';
 import * as store from './services/storage.js';
 
 /** In-memory state for the current visit. */
@@ -30,8 +31,6 @@ const state = {
   recipe: null,
   analysis: null,
   servings: 4,
-  messages: [],        // chat history sent to Gemini
-  chatBusy: false,
   searchToken: 0,      // lets a newer search/selection win over a slower older one
   selectToken: 0,
 };
@@ -39,7 +38,7 @@ const state = {
 /** Timestamp (ms) before which another AI request is refused (cooldown, or after a 429). */
 let blockedUntil = 0;
 const secondsToWait = () => Math.max(0, Math.ceil((blockedUntil - Date.now()) / 1000));
-const startCooldown = () => { blockedUntil = Date.now() + CONFIG.chef.cooldownMs; };
+const startCooldown = () => { blockedUntil = Date.now() + CONFIG.chat.cooldownMs; };
 
 /** Friendly text for any AI error; a 429 also blocks further requests for the advised time. */
 function aiErrorText(err) {
@@ -111,7 +110,7 @@ async function smartSearch() {
   const wait = secondsToWait();
   if (wait) return ui.setSearchNote(`Please wait ${wait}s before the next AI request.`, true);
   ui.setFallbackBusy(true);
-  ui.setSearchNote('Gemini is working out what to search for…');
+  ui.setSearchNote('NutriAI is working out what to search for…');
   startCooldown();
   try {
     const plan = await interpretSearch(state.query);
@@ -127,7 +126,7 @@ async function smartSearch() {
     if (list.length) {
       showResults(list, plan.interpretation ? `${plan.interpretation} – ${list.length} recipes` : `${list.length} recipes`);
     } else {
-      ui.setSearchNote('Still nothing in the database. You can have Gemini create this recipe.', true);
+      ui.setSearchNote('Still nothing in the database. You can have NutriAI create this recipe.', true);
     }
   } catch (err) {
     ui.setSearchNote(aiErrorText(err), true);
@@ -141,12 +140,12 @@ async function createFromQuery() {
   const wait = secondsToWait();
   if (wait) return ui.setSearchNote(`Please wait ${wait}s before the next AI request.`, true);
   ui.setFallbackBusy(true);
-  ui.setSearchNote('Gemini is writing the recipe…');
+  ui.setSearchNote('NutriAI is writing the recipe…');
   startCooldown();
   try {
     const raw = await createRecipe(state.query);
     const recipe = fromGenerated(raw);
-    if (!recipe.ingredients.length || !recipe.instructions) throw new Error('Gemini could not create a recipe for that request. Try describing a dish.');
+    if (!recipe.ingredients.length || !recipe.instructions) throw new Error('NutriAI could not create a recipe for that request. Try describing a dish.');
     ui.setSearchNote(`Created "${recipe.title}".`);
     ui.showFallback(false);
     await selectRecipe(recipe);
@@ -176,14 +175,17 @@ async function selectRecipe(source) {
 
   state.recipe = recipe;
   state.analysis = null;
-  state.messages = [];
   state.servings = recipe.servings > 0 ? recipe.servings : 4;
 
   ui.markActiveResult(recipe.id);
   ui.renderSelected(recipe);
   if (recipe.generated) attachPhoto(recipe, token);
   ui.renderSteps(recipe, null); // the database's own steps show immediately, before the AI answers
-  ui.resetChat(recipe.title);
+  chat.reset({
+    subtitle: `Chatting about ${recipe.title}`,
+    greeting: `Hi! I can help you make **${recipe.title}** healthier, higher in protein or lower in calories, or explain the science behind it. What would you like?`,
+    chips: CHEF_CHIPS,
+  });
   history.replaceState(null, '', recipe.generated ? location.pathname : `?r=${encodeURIComponent(recipe.id)}`);
   if (window.matchMedia('(max-width: 999px)').matches) $('profile-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -214,7 +216,7 @@ async function runAnalysis(token = state.selectToken) {
   try {
     const analysis = await analyseRecipe(recipe);
     if (token !== state.selectToken) return; // the user picked another recipe meanwhile
-    if (!analysis.totals.kcal && !analysis.steps.length) throw new Error('Gemini returned an empty analysis. Please try again.');
+    if (!analysis.totals.kcal && !analysis.steps.length) throw new Error('NutriAI returned an empty analysis. Please try again.');
     if (!recipe.generated) store.setChefAnalysis(recipe.id, analysis);
     applyAnalysis(analysis);
   } catch (err) {
@@ -237,46 +239,26 @@ function refreshProfile() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Chat                                                                */
+/* NutriChat (the shared chat panel, with this page's recipe as context) */
 /* ------------------------------------------------------------------ */
 
-async function sendChat(rawText) {
-  const text = rawText.trim().slice(0, CONFIG.chef.maxMessageChars);
-  if (!text || !state.recipe || state.chatBusy) return;
-  const wait = secondsToWait();
-  if (wait) return ui.setStatus(`Please wait ${wait}s before the next question.`, true);
+const CHEF_CHIPS = ['Make it higher in protein', 'Make it healthier', 'Lower the calories', 'Explain the science'];
 
-  ui.setStatus('');
-  state.chatBusy = true;
-  ui.setChatBusy(true);
-  state.messages.push({ role: 'user', text });
-  ui.appendMessage('user', text);
-  $('chat-input').value = '';
-  ui.renderChatChips([]);
-  ui.setTyping(true);
-  startCooldown();
-
-  try {
+const chat = setupChat({
+  ask: (history) => {
     const per = state.analysis ? perServing(state.analysis, state.servings) : null;
-    const reply = await chatAboutRecipe({
+    return chatAboutRecipe({
       title: state.recipe.title,
       ingredients: state.recipe.ingredients,
       nutrition: per ? { servings: state.servings, kcal: per.kcal, proteinG: per.proteinG, carbsG: per.carbsG, fatG: per.fatG } : undefined,
-    }, state.messages);
-    ui.setTyping(false);
-    state.messages.push({ role: 'assistant', text: reply.reply });
-    ui.appendMessage('ai', reply.reply);
-    ui.renderChatChips(reply.suggestions.length ? reply.suggestions : ui.DEFAULT_CHAT_CHIPS);
-  } catch (err) {
-    ui.setTyping(false);
-    state.messages.pop(); // keep the history strictly user/assistant alternating
-    ui.appendMessage('ai', `Sorry, I couldn't answer that. ${aiErrorText(err)} Please send your question again.`);
-    ui.renderChatChips(ui.DEFAULT_CHAT_CHIPS);
-  } finally {
-    state.chatBusy = false;
-    ui.setChatBusy(false);
-  }
-}
+    }, history);
+  },
+  secondsToWait,
+  startCooldown,
+  errorText: aiErrorText,
+  notify: (message, isError) => ui.setStatus(message, isError),
+  maxChars: CONFIG.chat.maxMessageChars,
+});
 
 /* ------------------------------------------------------------------ */
 /* Events                                                              */
@@ -336,21 +318,12 @@ const adjustServings = (delta) => {
 $('servings-minus').addEventListener('click', () => adjustServings(-1));
 $('servings-plus').addEventListener('click', () => adjustServings(1));
 
-$('chat-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  sendChat($('chat-input').value);
-});
-$('chat-chips').addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip[data-q]');
-  if (chip) sendChat(chip.dataset.q);
-});
-$('chat-input').maxLength = CONFIG.chef.maxMessageChars;
 
 /* ------------------------------------------------------------------ */
 /* Start                                                               */
 /* ------------------------------------------------------------------ */
 
-ui.resetChat('');
+chat.reset({ enabled: false, subtitle: 'Select a recipe, then ask how to make it healthier.' });
 ui.showProfile('empty');
 listCategories().then(ui.renderCategories).catch(() => { /* categories are a convenience */ });
 

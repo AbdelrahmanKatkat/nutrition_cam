@@ -59,6 +59,7 @@ One endpoint, several jobs chosen by an `action` field. Each job has its own val
 | action | Sent by | Returns |
 |---|---|---|
 | `scan` | NutriSnap | Meal estimate from a photo |
+| `meal_chat` | NutriSnap's NutriChat | `{reply, suggestions}` about the scanned meal or product (or general nutrition if nothing is scanned) |
 | `recipe_analyse` | NutriChef, on selecting a recipe | Nutrition totals, vitamins, steps, science, theory, safety |
 | `recipe_chat` | NutriChef chat | `{reply, suggestions}` |
 | `recipe_search` | "Search smarter" button | `{dishNames, ingredients, category, interpretation}` |
@@ -138,7 +139,9 @@ Why it is written this way:
 - **Temperature rules** were tightened after a test returned an unrelated temperature for a technique.
 - **Structured output** (JSON schema) guarantees the fields the page needs.
 
-### 4.2 Chat
+### 4.2 Chat (NutriChat)
+
+NutriChat is one panel used by both pages (`js/chat.js`): it owns the conversation, the busy state and the cooldown, and each page supplies its own context. NutriChef sends the recipe and its nutrition per serving (`recipe_chat`); NutriSnap sends the scanned meal and product (`meal_chat`, prompt in `proxy/src/prompts/scan.js`), or nothing before the first scan, in which case it answers general nutrition questions. A new result starts a new conversation.
 
 A friendly dietitian and food scientist who knows **one** recipe and its nutrition per serving. Replies are at most about 120 words: a lead sentence and up to four bullets. Every suggestion names the swap, the amount, the estimated effect per serving, and any change to temperature or timing. It must stay on food, say it is not medical advice, and return 2-3 follow-up question chips.
 

@@ -6,6 +6,7 @@
  */
 
 import { askProxy } from './proxy.js';
+import { askChat } from './chat-ai.js';
 
 const num = (v) => (Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0);
 const int = (v) => Math.round(num(v));
@@ -124,12 +125,8 @@ export function perServing(analysis, servings) {
  * @param {{role:'user'|'assistant', text:string}[]} messages  history, ending with the user's new message
  * @returns {Promise<{reply:string, suggestions:string[]}>}
  */
-export async function chatAboutRecipe(recipe, messages) {
-  const raw = await askProxy('recipe_chat', { recipe, messages });
-  return {
-    reply: str(raw.reply, 1500) || 'Sorry, I could not come up with an answer. Please try rephrasing.',
-    suggestions: (Array.isArray(raw.suggestions) ? raw.suggestions : []).map((s) => str(s, 60)).filter(Boolean).slice(0, 3),
-  };
+export function chatAboutRecipe(recipe, messages) {
+  return askChat('recipe_chat', { recipe, messages });
 }
 
 /**

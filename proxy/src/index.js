@@ -52,7 +52,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (request.method !== 'POST') return reply({ error: 'Method not allowed' }, 405);
     if (!originOk) return reply({ error: 'Origin not allowed' }, 403);
-    if (!env.GEMINI_API_KEY) return reply({ error: 'Server is missing GEMINI_API_KEY' }, 500);
+    if (!env.GEMINI_API_KEY) return reply({ error: 'The AI service is not configured on the server.' }, 500);
 
     // --- our own per-client limit (protects your Gemini quota) ---
     if (env.RATE_LIMITER) {

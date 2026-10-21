@@ -7,6 +7,7 @@
   <title>NutriChef – Cook it, understand it</title>
   <link rel="icon" href="assets/chef-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/chat.css">
   <link rel="stylesheet" href="css/chef.css">
 </head>
 <body class="chef-body">
@@ -51,9 +52,9 @@
 
       <!-- Shown only when a search finds nothing: spend an AI call on purpose, not by default -->
       <div id="fallback-box" class="fallback" hidden>
-        <p>Not what you were looking for? The free recipe list is small. Gemini can search by meaning or write the recipe for you.</p>
-        <button id="smart-btn" class="btn btn--light" type="button">Search smarter with Gemini</button>
-        <button id="create-btn" class="btn btn--dark" type="button">Create this recipe with Gemini</button>
+        <p>Not what you were looking for? The free recipe list is small. NutriAI can search by meaning or write the recipe for you.</p>
+        <button id="smart-btn" class="btn btn--light" type="button">Search smarter with NutriAI</button>
+        <button id="create-btn" class="btn btn--dark" type="button">Create this recipe with NutriAI</button>
       </div>
 
       <ul id="results" class="results" aria-label="Recipe results"></ul>
@@ -90,7 +91,7 @@
         <div id="profile-loading" class="profile__state" hidden>
           <div class="spinner" aria-hidden="true"></div>
           <p><strong id="loading-title">Analysing…</strong></p>
-          <p>Gemini is working out the nutrition and the food science. This usually takes 5–30 seconds.</p>
+          <p>NutriAI is working out the nutrition and the food science. This usually takes 5–30 seconds.</p>
         </div>
 
         <!-- error -->
@@ -151,19 +152,24 @@
           <ol id="steps" class="steps"><li class="steps__empty">Select a recipe to see the steps.</li></ol>
         </section>
 
-        <section class="card card--facts chat" aria-labelledby="chat-h">
-          <h2 id="chat-h">Gemini AI Assistant</h2>
-          <p id="chat-sub" class="chat__sub">Select a recipe, then ask how to make it healthier.</p>
-          <div id="chat-log" class="chat__log" role="log" aria-live="polite"></div>
-          <div id="chat-chips" class="chip-row chat__chips"></div>
-          <form id="chat-form" class="chat__form">
-            <input id="chat-input" type="text" autocomplete="off" disabled
-                   placeholder="Ask how to make it more healthy…" aria-label="Message the assistant">
-            <button id="chat-send" class="chat__send" type="submit" disabled aria-label="Send">
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 20v-6l10-2-10-2V4l19 8z"/></svg>
-            </button>
-          </form>
-          <p class="chat__note">Estimates only, not medical advice.</p>
+        <section class="card chat-card" aria-labelledby="chat-h">
+          <header class="chat-card__head">
+            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><circle cx="8" cy="10.5" r="1.4" fill="#dff1e3"/><circle cx="12" cy="10.5" r="1.4" fill="#dff1e3"/><circle cx="16" cy="10.5" r="1.4" fill="#dff1e3"/></svg>
+            <h2 id="chat-h"><strong>NutriChat</strong> <span>AI Assistant</span></h2>
+          </header>
+          <div class="chat-card__body">
+            <p id="chat-sub" class="chat__sub">Select a recipe, then ask how to make it healthier.</p>
+            <div id="chat-log" class="chat__log" role="log" aria-live="polite"></div>
+            <div id="chat-chips" class="chat__chips"></div>
+            <form id="chat-form" class="chat__form">
+              <input id="chat-input" type="text" autocomplete="off" disabled
+                     placeholder="Ask NutriChat anything…" aria-label="Message NutriChat">
+              <button id="chat-send" class="chat__send" type="submit" disabled aria-label="Send">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 20v-6l10-2-10-2V4l19 8z"/></svg>
+              </button>
+            </form>
+            <p class="chat__note">Estimates only, not medical advice.</p>
+          </div>
         </section>
       </div>
     </div>

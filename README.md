@@ -3,13 +3,16 @@
 A static, no-build site with two pages that share one design and one Gemini proxy:
 
 **NutriSnap** (`index.html`): take or upload a meal photo on your phone.
-- **Gemini AI** estimates the meal's calories and macros.
+- **NutriAI** estimates the meal's calories and macros.
 - **Open Food Facts** returns nutrition facts, Nutri-Score and labels for a product (by barcode, or by the meal name).
+- **NutriChat** answers questions about the result: healthier swaps, higher-protein versions, portion changes, or general nutrition.
 
 **NutriChef** (`chef.html`): search a recipe and learn what is in it and why it works.
 - **TheMealDB** (free recipe database) supplies recipes, photos, ingredients and instructions.
-- **Gemini AI** adds nutrition per serving, vitamins, the chemistry and cooking theory with optimal temperatures, clear making steps, and a chat to make the recipe healthier or higher in protein.
+- **NutriAI** adds nutrition per serving, vitamins, the chemistry and cooking theory with optimal temperatures, clear making steps, and **NutriChat** to make the recipe healthier or higher in protein.
 - Details: [`docs/NUTRICHEF.md`](docs/NUTRICHEF.md).
+
+> **Naming.** In the user interface the AI is called **NutriAI** and the chat **NutriChat**. The technical docs and code comments name the underlying model (Google Gemini) where that matters, for example in the privacy notes.
 
 Design reference: [`docs/design-reference.jpg`](docs/design-reference.jpg).
 
@@ -66,14 +69,17 @@ index.html                  NutriSnap page markup
 chef.html                   NutriChef page markup
 css/styles.css              shared styling + NutriSnap (CSS variables for the palette)
 css/chef.css                NutriChef styling
+css/chat.css                NutriChat panel (shared by both pages)
 js/
   app.js, ui.js             NutriSnap controller and view
   chef.js, chef-ui.js       NutriChef controller and view
+  chat.js                   NutriChat panel: DOM, history, cooldown (shared by both pages)
   dom.js                    shared helpers ($, esc, safe markdown)
   config.js                 URLs, limits, daily values
   services/
     proxy.js                the one place the browser calls the Worker (timeout, 429)
-    gemini.js               NutriSnap: meal photo -> estimate
+    gemini.js               NutriSnap: meal photo -> estimate, meal chat
+    chat-ai.js              one chat request, cleaned (both pages)
     chef-ai.js              NutriChef: analysis, chat, smart search, create recipe
     mealdb.js               TheMealDB client
     openfoodfacts.js        barcode lookup + text search
@@ -84,7 +90,7 @@ proxy/                      Cloudflare Worker: key, prompts, gates (own README)
   src/index.js              gates + routing
   src/gemini.js             retries, fallback model, time budget
   src/tasks.js              one validator + prompt + schema per action
-  src/prompts/              scan.js (NutriSnap), chef.js (NutriChef)
+  src/prompts/              scan.js (NutriSnap scan + NutriChat), chef.js (NutriChef)
 docs/
   NUTRICHEF.md              NutriChef design, APIs, prompts
   IMPROVEMENTS.md           roadmap and known limitations

@@ -26,9 +26,9 @@ function write(key, value) {
   }
 }
 
-/** @returns {{useGemini:boolean, useOff:boolean}} */
+/** @returns {{useAi:boolean, useOff:boolean}} */
 export function loadSettings() {
-  return { useGemini: true, useOff: true, ...read(KEYS.settings, {}) };
+  return { useAi: true, useOff: true, ...read(KEYS.settings, {}) };
 }
 
 /** @param {Partial<ReturnType<typeof loadSettings>>} patch */

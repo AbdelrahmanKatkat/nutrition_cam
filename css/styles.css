@@ -5,6 +5,7 @@
 
 :root {
   --cream: #fbf6e9;
+  --mint: #dcebdc;
   --cream-dark: #e9efe3;
   --green-900: #123a24;
   --green-800: #1b4d32;
@@ -49,12 +50,11 @@ button { font: inherit; cursor: pointer; }
 .layout { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
 .panel { padding: 24px 20px; }
 .panel--input { background: var(--cream); display: flex; flex-direction: column; gap: 18px; }
-.panel--results { background: var(--green-800); display: grid; gap: 18px; align-content: start; }
+.panel--results { background: var(--mint); display: grid; gap: 18px; align-content: start; }
 
 @media (min-width: 900px) {
   .layout { grid-template-columns: 1.1fr 1.4fr; }
   .panel { padding: 40px; }
-  .panel--results { grid-template-columns: 1fr 1fr; align-items: start; }
 }
 
 /* ---------- brand ---------- */
@@ -181,10 +181,12 @@ button { font: inherit; cursor: pointer; }
 .bar__fill--yellow { background: var(--yellow); }
 
 /* facts card */
-.score-row {
-  display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 12px 14px; border-radius: 12px; background: var(--green-100); font-weight: 700;
+.facts-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;
+  padding: 10px 14px; border-radius: 14px; background: var(--green-100);
 }
+.facts-head h2 { margin: 0; font-size: 1.2rem; }
+.facts-head__score { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .78rem; font-weight: 700; }
 .grade { padding: 8px 16px; border-radius: 10px; background: #bcc7bf; color: #fff; font-weight: 800; }
 .grade[data-grade="a"] { background: #038141; }
 .grade[data-grade="b"] { background: #85bb2f; }
@@ -200,6 +202,17 @@ hr { border: 0; border-top: 1px solid #e3e6e1; margin: 16px 0 0; }
 .badge { padding: 3px 10px; border: 1.5px solid var(--green-800); border-radius: 99px; background: var(--green-100); font-size: .8rem; font-weight: 600; }
 .barcode-info { margin-top: 10px; font-size: .85rem; }
 code { font-family: ui-monospace, Consolas, monospace; }
+
+/* ---------- results panel: light mint, heading, two cards, then NutriChat ---------- */
+.results-title { font-size: 1.7rem; color: var(--green-800); letter-spacing: -.3px; }
+.results-grid { display: grid; gap: 18px; align-items: start; }
+@media (min-width: 900px) { .results-grid { grid-template-columns: 1fr 1fr; } }
+.panel--results .card--meal { background: #f6faf4; }
+.card--meal h2 { margin: 14px 0 2px; }
+.card--meal .meal-name { margin-top: 0; }
+.off-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: #eef1ec; }
+.off-box h3 { margin-top: 0; }
+.off-box > img { flex: none; width: 92px; height: 92px; }
 
 /* ---------- dialogs ---------- */
 dialog { border: 0; border-radius: var(--radius); padding: 0; max-width: min(92vw, 460px); width: 100%; box-shadow: var(--shadow); }

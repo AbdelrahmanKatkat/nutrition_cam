@@ -8,6 +8,7 @@
  */
 
 import { askProxy } from './proxy.js';
+import { askChat } from './chat-ai.js';
 
 /**
  * @typedef {Object} MealPrediction
@@ -36,6 +37,15 @@ export { RateLimitError } from './proxy.js';
 export async function predictMeal(image, hint = '') {
   const raw = await askProxy('scan', { image: image.base64, mimeType: image.mimeType, hint });
   return normalize(raw);
+}
+
+/**
+ * NutriChat on the NutriSnap page: ask about the scanned meal or product (or nutrition in general).
+ * @param {{meal?:object, product?:object}|undefined} context  what the last scan found
+ * @param {{role:'user'|'assistant', text:string}[]} messages  history ending with the user's new message
+ */
+export function chatAboutMeal(context, messages) {
+  return askChat('meal_chat', { context, messages });
 }
 
 /** Clamp / coerce model output so the UI never has to defend against odd values. */

@@ -49,35 +49,35 @@ export async function callGemini(env, { system, contents, schema }) {
       upstream = null;
       if (i === attempts.length - 1) {
         const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError';
-        return { ok: false, status: timedOut ? 504 : 502, error: timedOut ? 'Gemini timed out' : 'Could not reach Gemini' };
+        return { ok: false, status: timedOut ? 504 : 502, error: timedOut ? 'NutriAI timed out' : 'Could not reach NutriAI' };
       }
       continue;
     }
     // Quota exhausted: retrying now would only burn more quota, so tell the browser to back off.
     if (upstream.status === 429) {
       const retryAfter = upstream.headers.get('Retry-After') || String(DEFAULT_RETRY_AFTER_S);
-      return { ok: false, status: 429, error: 'Gemini rate limit reached. Try again shortly.', retryAfter };
+      return { ok: false, status: 429, error: 'NutriAI rate limit reached. Try again shortly.', retryAfter };
     }
     if (!RETRYABLE_STATUS.has(upstream.status)) break;
     console.warn('Gemini busy', attempts[i], upstream.status, 'attempt', i + 1);
   }
 
-  if (!upstream) return { ok: false, status: 504, error: 'Gemini did not respond in time. Please try again.' };
+  if (!upstream) return { ok: false, status: 504, error: 'NutriAI did not respond in time. Please try again.' };
   if (RETRYABLE_STATUS.has(upstream.status)) {
-    return { ok: false, status: 503, error: 'Gemini is busy right now. Please try again in a moment.', retryAfter: '20' };
+    return { ok: false, status: 503, error: 'NutriAI is busy right now. Please try again in a moment.', retryAfter: '20' };
   }
   if (!upstream.ok) {
     // Log details server-side; never forward upstream bodies to the browser.
     console.error('Gemini error', upstream.status, (await upstream.text()).slice(0, 300));
-    return { ok: false, status: 502, error: `Gemini request failed (${upstream.status})` };
+    return { ok: false, status: 502, error: `NutriAI request failed (${upstream.status})` };
   }
 
   const data = await upstream.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) return { ok: false, status: 502, error: 'Gemini returned no content (the input may have been blocked)' };
+  if (!text) return { ok: false, status: 502, error: 'NutriAI returned no content (the input may have been blocked)' };
   try {
     return { ok: true, json: JSON.parse(text) };
   } catch {
-    return { ok: false, status: 502, error: 'Gemini returned invalid JSON' };
+    return { ok: false, status: 502, error: 'NutriAI returned invalid JSON' };
   }
 }

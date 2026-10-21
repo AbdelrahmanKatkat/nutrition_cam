@@ -7,6 +7,7 @@
   <title>NutriSnap – Snap &amp; Know Your Food</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
   <main class="layout">
@@ -55,9 +56,9 @@
 
         <div class="controls">
           <div class="services">
-            <label class="service service--gemini">
-              <input id="use-gemini" type="checkbox" checked>
-              <span><strong>Gemini AI</strong><small>(Calorie Predictor)</small></span>
+            <label class="service service--ai">
+              <input id="use-ai" type="checkbox" checked>
+              <span><strong>NutriAI</strong><small>(Calorie Predictor)</small></span>
             </label>
             <label class="service service--off">
               <input id="use-off" type="checkbox" checked>
@@ -74,7 +75,7 @@
         </div>
       </div>
 
-      <!-- Optional text hint: narrows the AI estimate (and the Open Food Facts search when Gemini is off) -->
+      <!-- Optional text hint: narrows the AI estimate (and the Open Food Facts search when NutriAI is off) -->
       <section class="hint-card" aria-labelledby="hint-title">
         <div class="hint-card__head">
           <h2 id="hint-title" class="section-title">What's on your plate?</h2>
@@ -118,49 +119,74 @@
       </footer>
     </section>
 
-    <!-- ============ RIGHT: results ============ -->
-    <section class="panel panel--results" aria-label="Results">
-      <article class="card card--meal" aria-labelledby="meal-title">
-        <img class="deco deco--tomato" src="assets/tomato.svg" alt="" aria-hidden="true">
-        <h2 id="meal-title">Detected Meal &amp; Calorie Prediction</h2>
-        <div class="meal-photo">
-          <img id="result-photo" alt="" hidden>
-          <div id="result-placeholder" class="placeholder">
-            <img src="assets/salad-bowl.svg" alt="" width="120" height="120">
-            <p>Your meal will appear here</p>
+    <!-- ============ RIGHT: results + NutriChat ============ -->
+    <section class="panel panel--results" aria-label="Results and assistant">
+      <h2 class="results-title">Results &amp; Assistant</h2>
+
+      <div class="results-grid">
+        <article class="card card--meal" aria-labelledby="meal-title">
+          <img class="deco deco--tomato" src="assets/tomato.svg" alt="" aria-hidden="true">
+          <div class="meal-photo">
+            <img id="result-photo" alt="" hidden>
+            <div id="result-placeholder" class="placeholder">
+              <img src="assets/salad-bowl.svg" alt="" width="120" height="120">
+              <p>Your meal will appear here</p>
+            </div>
           </div>
+          <h2 id="meal-title">Detected Meal</h2>
+          <p class="meal-name" id="meal-name">—</p>
+          <p class="estimate-label">Estimated:</p>
+          <p class="kcal"><span id="kcal">—</span> <small>kcal</small></p>
+          <p class="confidence-label">AI Confidence: <span id="confidence-pct"></span></p>
+          <div class="bar"><div id="confidence-bar" class="bar__fill bar__fill--green" style="width:0"></div></div>
+          <p id="meal-items" class="notes"></p>
+          <p id="meal-notes" class="notes"></p>
+        </article>
+
+        <article class="card card--facts" aria-labelledby="facts-title">
+          <div class="facts-head">
+            <h2 id="facts-title">Nutritional Facts</h2>
+            <span class="facts-head__score" title="Nutri-Score from Open Food Facts: A is best, E is worst">Nutri-Score <span id="grade" class="grade" data-grade="">—</span></span>
+          </div>
+
+          <h3>Breakdown <small id="breakdown-basis"></small></h3>
+          <ul class="breakdown">
+            <li><span>Calories: <b id="b-cal">—</b></span><div class="bar"><div id="bar-cal" class="bar__fill bar__fill--orange"></div></div></li>
+            <li><span>Protein: <b id="b-pro">—</b></span><div class="bar"><div id="bar-pro" class="bar__fill bar__fill--blue"></div></div></li>
+            <li><span>Carbs: <b id="b-carb">—</b></span><div class="bar"><div id="bar-carb" class="bar__fill bar__fill--green"></div></div></li>
+            <li><span>Fats: <b id="b-fat">—</b></span><div class="bar"><div id="bar-fat" class="bar__fill bar__fill--yellow"></div></div></li>
+          </ul>
+
+          <div class="off-box">
+            <div>
+              <h3>Open Food Facts Data</h3>
+              <p id="off-product" class="off-product">No product scanned yet.</p>
+              <div id="badges" class="badges"></div>
+              <p class="barcode-info">Barcode Scan Info: <code id="barcode-info">—</code></p>
+            </div>
+            <img src="assets/product-label.svg" alt="" width="92" height="92">
+          </div>
+        </article>
+      </div>
+
+      <section class="card chat-card" aria-labelledby="chat-h">
+        <header class="chat-card__head">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><circle cx="8" cy="10.5" r="1.4" fill="#dff1e3"/><circle cx="12" cy="10.5" r="1.4" fill="#dff1e3"/><circle cx="16" cy="10.5" r="1.4" fill="#dff1e3"/></svg>
+          <h2 id="chat-h"><strong>NutriChat</strong> <span>AI Assistant – Ask about your meal!</span></h2>
+        </header>
+        <div class="chat-card__body">
+          <p id="chat-sub" class="chat__sub"></p>
+          <div id="chat-log" class="chat__log" role="log" aria-live="polite"></div>
+          <div id="chat-chips" class="chat__chips"></div>
+          <form id="chat-form" class="chat__form">
+            <input id="chat-input" type="text" autocomplete="off" placeholder="Ask NutriChat anything…" aria-label="Message NutriChat">
+            <button id="chat-send" class="chat__send" type="submit" aria-label="Send">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 20v-6l10-2-10-2V4l19 8z"/></svg>
+            </button>
+          </form>
+          <p class="chat__note">Estimates only, not medical advice.</p>
         </div>
-        <p class="meal-name" id="meal-name">—</p>
-        <p class="estimate-label">Estimated:</p>
-        <p class="kcal"><span id="kcal">—</span> <small>kcal</small></p>
-        <p class="confidence-label">AI Confidence: <span id="confidence-pct"></span></p>
-        <div class="bar"><div id="confidence-bar" class="bar__fill bar__fill--green" style="width:0"></div></div>
-        <p id="meal-items" class="notes"></p>
-        <p id="meal-notes" class="notes"></p>
-      </article>
-
-      <article class="card card--facts" aria-labelledby="facts-title">
-        <h2 id="facts-title">Nutritional Facts</h2>
-
-        <div class="score-row">
-          <span>Nutritional<br>Score:</span>
-          <span id="grade" class="grade" data-grade="">—</span>
-        </div>
-
-        <h3>Breakdown <small id="breakdown-basis"></small></h3>
-        <ul class="breakdown">
-          <li><span>Calories: <b id="b-cal">—</b></span><div class="bar"><div id="bar-cal" class="bar__fill bar__fill--orange"></div></div></li>
-          <li><span>Protein: <b id="b-pro">—</b></span><div class="bar"><div id="bar-pro" class="bar__fill bar__fill--blue"></div></div></li>
-          <li><span>Carbs: <b id="b-carb">—</b></span><div class="bar"><div id="bar-carb" class="bar__fill bar__fill--green"></div></div></li>
-          <li><span>Fats: <b id="b-fat">—</b></span><div class="bar"><div id="bar-fat" class="bar__fill bar__fill--yellow"></div></div></li>
-        </ul>
-
-        <hr>
-        <h3>Open Food Facts Data</h3>
-        <p id="off-product" class="off-product">No product looked up yet.</p>
-        <div id="badges" class="badges"></div>
-        <p class="barcode-info">Barcode Scan Info: <code id="barcode-info">—</code></p>
-      </article>
+      </section>
     </section>
   </main>
 
@@ -168,10 +194,11 @@
   <dialog id="settings-dialog">
     <form method="dialog" class="dialog">
       <h2>Help &amp; Settings</h2>
-      <p><b>Meal photo:</b> tick Gemini AI, add a photo, press <b>Scan Now</b>.</p>
+      <p><b>Meal photo:</b> tick NutriAI, add a photo, press <b>Scan Now</b>.</p>
       <p><b>Packaged food:</b> photograph the barcode (or type its digits), tick Open Food Facts, press <b>Scan Now</b>.</p>
       <p>Tap the refresh icon next to <b>Camera / Upload</b> to start a new item. Until you do, your photo stays loaded: edit the description and press <b>Scan Now</b> again to re-run.</p>
-      <p class="warn">The Gemini key is held by a server-side proxy, never in this page. Scans are limited to protect the quota; if you hit the limit, wait for the countdown.</p>
+      <p><b>NutriChat:</b> after a scan, ask it for healthier swaps, higher-protein versions or a different portion size.</p>
+      <p class="warn">The AI key is held by a secure server, never in this page. Requests are limited to protect the quota; if you hit the limit, wait for the countdown.</p>
       <div class="dialog__actions">
         <button class="btn btn--dark" value="close">Close</button>
       </div>

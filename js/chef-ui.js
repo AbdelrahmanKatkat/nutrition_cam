@@ -4,7 +4,7 @@
  */
 
 import { CONFIG } from './config.js';
-import { $, esc, mdLite } from './dom.js';
+import { $, esc } from './dom.js';
 import { imageUrl } from './services/mealdb.js';
 
 /* ---------------------------------------------------------------- */
@@ -98,7 +98,7 @@ export function renderSelected(recipe, analysis = null) {
     ? ` Photo: <a href="${esc(recipe.photoCredit.url)}" target="_blank" rel="noopener noreferrer">Wikipedia, ${esc(recipe.photoCredit.title)}</a>.`
     : '';
   $('selected-source').innerHTML = recipe.generated
-    ? `Created by Gemini. ${esc(recipe.note || '')}${credit}`
+    ? `Created by NutriAI. ${esc(recipe.note || '')}${credit}`
     : links.join(' · ');
 }
 
@@ -210,8 +210,8 @@ export function renderProfile(analysis, per, servings) {
   $('safety').textContent = analysis.safety ? `Food safety: ${analysis.safety}` : '';
   $('safety').hidden = !analysis.safety;
   $('assumptions').textContent = analysis.assumptions
-    ? `Estimates by Gemini. ${analysis.assumptions} Not medical advice.`
-    : 'Estimates by Gemini. Not medical advice.';
+    ? `Estimates by NutriAI. ${analysis.assumptions} Not medical advice.`
+    : 'Estimates by NutriAI. Not medical advice.';
 }
 
 /* ---------------------------------------------------------------- */
@@ -251,60 +251,4 @@ export function renderSteps(recipe, analysis) {
   ol.innerHTML = steps.length
     ? steps.map((t, i) => `<li class="step"><span class="step__n">${i + 1}</span><div><p>${esc(t)}</p></div></li>`).join('')
     : '<li class="steps__empty">Select a recipe to see the steps.</li>';
-}
-
-/* ---------------------------------------------------------------- */
-/* Chat                                                             */
-/* ---------------------------------------------------------------- */
-
-export const DEFAULT_CHAT_CHIPS = [
-  'Make it higher in protein',
-  'Make it healthier',
-  'Lower the calories',
-  'Explain the science',
-];
-
-export function resetChat(title) {
-  $('chat-log').innerHTML = '';
-  $('chat-sub').textContent = title ? `Chatting about ${title}` : 'Select a recipe, then ask how to make it healthier.';
-  const on = Boolean(title);
-  $('chat-input').disabled = !on;
-  $('chat-send').disabled = !on;
-  $('chat-input').value = '';
-  renderChatChips(on ? DEFAULT_CHAT_CHIPS : []);
-  if (on) {
-    appendMessage('ai', `Hi! I can help you make **${title}** healthier, higher in protein or lower in calories, or explain the science behind it. What would you like?`);
-  }
-}
-
-export function renderChatChips(list) {
-  $('chat-chips').innerHTML = list.map((t) => `<button type="button" class="chip" data-q="${esc(t)}">${esc(t)}</button>`).join('');
-}
-
-export function appendMessage(role, text) {
-  const log = $('chat-log');
-  const el = document.createElement('div');
-  el.className = `msg msg--${role}`;
-  el.innerHTML = role === 'user'
-    ? `<p><b>You:</b> ${esc(text)}</p>`
-    : `<span class="msg__avatar" aria-hidden="true">AI</span><div class="msg__text">${mdLite(text)}</div>`;
-  log.appendChild(el);
-  log.scrollTop = log.scrollHeight;
-}
-
-export function setTyping(on) {
-  const existing = $('chat-typing');
-  if (!on) { existing?.remove(); return; }
-  if (existing) return;
-  const el = document.createElement('div');
-  el.id = 'chat-typing';
-  el.className = 'msg msg--ai';
-  el.innerHTML = '<span class="msg__avatar" aria-hidden="true">AI</span><div class="msg__text typing"><span></span><span></span><span></span></div>';
-  $('chat-log').appendChild(el);
-  $('chat-log').scrollTop = $('chat-log').scrollHeight;
-}
-
-export function setChatBusy(busy) {
-  $('chat-send').disabled = busy || $('chat-input').disabled;
-  $('chat-input').readOnly = busy;
 }

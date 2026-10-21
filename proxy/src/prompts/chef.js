@@ -6,7 +6,7 @@
  * prompt tells the model that fenced text is data, never instructions.
  */
 
-import { cleanLine, cleanBlock } from '../util.js';
+import { cleanLine, cleanBlock, cleanHistory } from '../util.js';
 
 /** Categories used by TheMealDB, the free recipe database the page searches. */
 export const CATEGORIES = [
@@ -14,7 +14,7 @@ export const CATEGORIES = [
   'Pasta', 'Pork', 'Seafood', 'Side', 'Starter', 'Vegan', 'Vegetarian',
 ];
 
-const LIMITS = { title: 120, ingredients: 60, measure: 40, ingredientName: 60, instructions: 8000, message: 600, history: 8 };
+const LIMITS = { title: 120, ingredients: 60, measure: 40, ingredientName: 60, instructions: 8000 };
 
 /* ------------------------------------------------------------------ */
 /* 1. Recipe analysis                                                  */
@@ -158,13 +158,8 @@ RULES
  */
 export function buildChatParts(recipe, messages) {
   const r = recipe && typeof recipe === 'object' ? recipe : {};
-  const history = (Array.isArray(messages) ? messages : []).slice(-LIMITS.history)
-    .map((m) => ({ role: m?.role === 'assistant' ? 'model' : 'user', text: cleanLine(m?.text, LIMITS.message) }))
-    .filter((m) => m.text);
-  if (!r.title || history.length === 0 || history[history.length - 1].role !== 'user') return null;
-  // Gemini requires the conversation to start with a user turn.
-  while (history.length && history[0].role !== 'user') history.shift();
-  if (history.length === 0) return null;
+  const history = cleanHistory(messages);
+  if (!r.title || !history) return null;
 
   const n = r.nutrition && typeof r.nutrition === 'object' ? r.nutrition : {};
   const ingredients = (Array.isArray(r.ingredients) ? r.ingredients : []).slice(0, LIMITS.ingredients)

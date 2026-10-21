@@ -2,14 +2,15 @@
  * App entry point: wires the DOM events to the services and the UI.
  *
  * Flow of "Scan Now":
- *   photo (+ optional description) -> Gemini via proxy -> meal estimate
+ *   photo (+ optional description) -> NutriAI via proxy -> meal estimate
  *         -> (Open Food Facts by barcode, else by meal name) -> product facts
  *         -> render + save to history
  *
  * @module app
  */
 
-import { predictMeal, RateLimitError } from './services/gemini.js';
+import { predictMeal, chatAboutMeal, RateLimitError } from './services/gemini.js';
+import { setupChat } from './chat.js';
 import { CONFIG } from './config.js';
 import { getProductByBarcode, searchProduct } from './services/openfoodfacts.js';
 import { prepareImage, makeThumbnail, detectBarcode } from './services/image.js';
@@ -19,16 +20,64 @@ import * as ui from './ui.js';
 const $ = (id) => document.getElementById(id);
 
 /** In-memory state for the current scan. */
-const state = { image: null, file: null };
+const state = { image: null, file: null, meal: null, product: null };
 const settings = store.loadSettings();
 
 // ---------- init ----------
 loadWebAnalytics(CONFIG.webAnalyticsToken);
-$('use-gemini').checked = settings.useGemini;
+$('use-ai').checked = settings.useAi;
 $('use-off').checked = settings.useOff;
 
-/** Timestamp (ms) before which a live Gemini call is not allowed (cooldown / 429 back-off). */
+/** Timestamp (ms) before which a live NutriAI call is not allowed (cooldown / 429 back-off). */
 let blockedUntil = 0;
+
+// ---------- NutriChat: ask about the scanned meal (or about healthy eating in general) ----------
+const GENERAL_CHIPS = ['Healthy breakfast ideas', 'High-protein snacks', 'How do I read a food label?'];
+const MEAL_CHIPS = ['Suggest high-protein swaps', 'Make it lower in calories', 'Is this a balanced meal?', 'Adjust the portion size'];
+
+let chatBlockedUntil = 0;
+const chat = setupChat({
+  ask: (history) => chatAboutMeal(mealContext(), history),
+  secondsToWait: () => Math.max(0, Math.ceil((chatBlockedUntil - Date.now()) / 1000)),
+  startCooldown: () => { chatBlockedUntil = Date.now() + CONFIG.chat.cooldownMs; },
+  errorText: (err) => {
+    if (err instanceof RateLimitError) {
+      chatBlockedUntil = Date.now() + err.retryAfterS * 1000;
+      return `Too many AI requests. Try again in ${err.retryAfterS}s.`;
+    }
+    return err.message || 'Something went wrong.';
+  },
+  notify: (message, isError) => { if (message) ui.setStatus('Please wait.', message, isError); },
+  maxChars: CONFIG.chat.maxMessageChars,
+});
+
+/** What the chat knows about the current result (nothing before the first scan). */
+function mealContext() {
+  const { meal, product } = state;
+  if (!meal && !product) return undefined;
+  return {
+    meal: meal ? { name: meal.mealName, calories: meal.calories, proteinG: meal.proteinG, carbsG: meal.carbsG, fatG: meal.fatG, items: meal.items } : undefined,
+    product: product ? { name: product.name, brand: product.brand, nutriScore: product.nutriScore, per100g: product.per100g } : undefined,
+  };
+}
+
+function resetChat() {
+  chat.reset({
+    subtitle: 'Ask about your meal or about healthy eating.',
+    greeting: "Hey there! Upload a photo or ask me to analyse your meal's nutrition, suggest healthier swaps, or adjust portion sizes.",
+    chips: GENERAL_CHIPS,
+  });
+}
+
+/** A new result means a new conversation, framed around what was found. */
+function startChatForResult() {
+  const { meal, product } = state;
+  const greeting = meal
+    ? `I can see **${meal.mealName}**, about ${meal.calories} kcal. Want ideas to make it lighter, higher in protein, or a different portion size?`
+    : `That is **${product.name}**${product.nutriScore ? ` (Nutri-Score ${product.nutriScore.toUpperCase()})` : ''}. Ask me how it fits into your day, or for healthier alternatives.`;
+  chat.reset({ subtitle: `Chatting about ${meal ? meal.mealName : product.name}`, greeting, chips: MEAL_CHIPS });
+}
+resetChat();
 
 // ---------- events ----------
 // Two ways in: the camera input opens the rear camera on phones; the upload input opens the gallery or files.
@@ -43,7 +92,7 @@ const hintBox = $('meal-hint');
 const syncHint = () => {
   $('hint-count').textContent = `${hintBox.value.length} / ${hintBox.maxLength}`;
   const text = hintBox.value.toLowerCase();
-  document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('is-on', text.includes(c.dataset.add.toLowerCase())));
+  document.querySelectorAll('.hint-chips .chip').forEach((c) => c.classList.toggle('is-on', text.includes(c.dataset.add.toLowerCase())));
 };
 hintBox.addEventListener('input', syncHint);
 $('hint-clear').addEventListener('click', () => { hintBox.value = ''; syncHint(); hintBox.focus(); });
@@ -55,7 +104,7 @@ document.querySelector('.hint-chips').addEventListener('click', (e) => {
   syncHint();
 });
 
-$('use-gemini').addEventListener('change', (e) => store.saveSettings({ useGemini: e.target.checked }));
+$('use-ai').addEventListener('change', (e) => store.saveSettings({ useAi: e.target.checked }));
 $('use-off').addEventListener('change', (e) => store.saveSettings({ useOff: e.target.checked }));
 
 // "New item": drop the photo, description, barcode and results so the next meal starts clean.
@@ -67,8 +116,11 @@ $('new-btn').addEventListener('click', () => {
   $('barcode').value = '';
   hintBox.value = '';
   syncHint();
+  state.meal = null;
+  state.product = null;
   ui.resetPreview();
   ui.resetResults();
+  resetChat();
   ui.setStatus('Ready to scan.', 'Snap your meal or look up a barcode.');
 });
 
@@ -109,14 +161,14 @@ async function onPhotoChosen(e) {
 async function onScan() {
   let barcode = $('barcode').value.trim();
   const hint = $('meal-hint').value.trim();
-  const useGemini = $('use-gemini').checked;
+  const useAi = $('use-ai').checked;
   const useOff = $('use-off').checked;
 
   if (!state.image && !barcode && !(hint && useOff)) {
     return ui.setStatus('Nothing to scan.', 'Add a photo, type a barcode or describe the food first.', true);
   }
-  const callsGemini = useGemini && state.image;
-  if (callsGemini && Date.now() < blockedUntil) {
+  const callsAi = useAi && state.image;
+  if (callsAi && Date.now() < blockedUntil) {
     const s = Math.ceil((blockedUntil - Date.now()) / 1000);
     return ui.setStatus('Please wait.', `Next scan available in ${s}s (protects the AI quota).`, true);
   }
@@ -124,13 +176,15 @@ async function onScan() {
   ui.setBusy(true);
   ui.setStatus('Scanning…', 'Contacting the services.');
   ui.resetResults(); // a re-run must not leave stale results behind (the photo stays loaded)
+  state.meal = null;
+  state.product = null;
 
   try {
     let meal = null;
     let product = null;
 
     // 1) Meal estimate (needs a photo)
-    if (useGemini && state.image) {
+    if (useAi && state.image) {
       blockedUntil = Date.now() + CONFIG.scan.cooldownMs;
       meal = await predictMeal(state.image, hint);
       ui.renderMeal(meal, state.image.dataUrl);
@@ -147,7 +201,7 @@ async function onScan() {
         } else if (meal && meal.calories > 0) {
           product = await searchProduct(meal.mealName);
         } else if (hint) {
-          product = await searchProduct(hint); // Gemini off: the description narrows the database search
+          product = await searchProduct(hint); // NutriAI off: the description narrows the database search
         }
       } catch (err) {
         console.warn(err); // Open Food Facts is community-run and sometimes returns 5xx
@@ -168,6 +222,11 @@ async function onScan() {
 
     if ((meal && meal.isFood) || product) await saveToHistory(meal, product);
 
+    // Give NutriChat this result as context (a non-food photo gives it nothing to talk about).
+    state.meal = meal && meal.isFood ? meal : null;
+    state.product = product;
+    if (state.meal || state.product) startChatForResult();
+
     if (meal && !meal.isFood) {
       ui.setStatus('No food detected.', meal.notes || 'Upload a photo of a meal, drink or food package.', true);
     } else if (meal) {
@@ -177,7 +236,7 @@ async function onScan() {
     } else if (offFailed) {
       ui.setStatus('Open Food Facts unavailable.', 'The food database did not respond. Try again in a moment.', true);
     } else if (useOff && !barcode) {
-      ui.setStatus('No barcode found.', 'Could not read a barcode from the photo. Type the digits, or tick Gemini AI to identify the meal.', true);
+      ui.setStatus('No barcode found.', 'Could not read a barcode from the photo. Type the digits, or tick NutriAI AI to identify the meal.', true);
     } else {
       ui.setStatus('Not found.', `Open Food Facts has no product for ${barcode}.`, true);
     }
