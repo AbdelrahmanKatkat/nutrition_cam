@@ -35,10 +35,11 @@ Rotating the key: run `wrangler secret put GEMINI_API_KEY` again. No redeploy of
 |---|---|---|
 | Secret key | Worker secret | Never reaches browser or repo |
 | Origin allow-list | `ALLOWED_ORIGINS` | Only your site's browser calls are accepted |
-| Rate limit (5/min per IP) | `[[ratelimits]]` | Stops one client draining your Gemini quota |
-| Size/type validation | `src/index.js` | Rejects huge or non-image payloads |
-| 20 s upstream timeout | `src/index.js` | A hung Gemini call can't hold requests open |
-| Fixed prompt + schema | `src/index.js` | Endpoint only does meal analysis |
+| Rate limit (10/min per IP) | `[[ratelimits]]` | Stops one client draining your Gemini quota |
+| Size/type validation | `src/tasks.js` | Rejects huge or wrong-type payloads |
+| One 50 s time budget, retries, fallback model | `src/gemini.js` | A slow or busy Gemini can't hold requests open; the browser always gets an answer |
+| Fixed prompts + schemas, one per `action` | `src/prompts/`, `src/tasks.js` | Endpoint only does the listed jobs (meal scan, recipe analysis, chat, search help, recipe creation) |
+| Body-size check before parsing | `src/index.js` | Rejects huge requests early |
 | 429 passthrough with `Retry-After` | `src/index.js` | Browser shows a countdown instead of retrying blindly |
 
 **Limits of these protections:** the `Origin` header is enforced by browsers but can be forged by scripts (curl), and the Cloudflare rate limiter is approximate and per location. For a public site, also (a) set a spending/quota cap on the Gemini key in Google AI Studio / Cloud, and (b) optionally add [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) to stop bots.

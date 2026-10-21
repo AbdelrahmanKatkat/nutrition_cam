@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 170" role="img" aria-label="Phone with camera">
+  <!-- phone -->
+  <rect x="14" y="4" width="92" height="162" rx="18" fill="#1b4d32"/>
+  <rect x="20" y="10" width="80" height="150" rx="13" fill="#fbf6e9"/>
+  <rect x="44" y="14" width="32" height="9" rx="4.5" fill="#1b4d32"/>
+  <!-- camera glyph -->
+  <path d="M45 62l-4 6H32a6 6 0 0 0-6 6v38a6 6 0 0 0 6 6h56a6 6 0 0 0 6-6V74a6 6 0 0 0-6-6H79l-4-6z" fill="#1b4d32"/>
+  <circle cx="60" cy="92" r="15" fill="#fbf6e9"/>
+  <circle cx="60" cy="92" r="9.5" fill="#1b4d32"/>
+  <circle cx="56" cy="88" r="3" fill="#fbf6e9"/>
+  <circle cx="84" cy="76" r="2.5" fill="#fbf6e9"/>
+  <!-- leaf -->
+  <path d="M82 52c-2-10 6-18 16-18 0 10-6 17-16 18z" fill="#4c9a5f"/>
+</svg>

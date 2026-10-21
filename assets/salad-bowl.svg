@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" role="img" aria-label="Salad bowl">
+  <!-- confetti -->
+  <circle cx="14" cy="60" r="5" fill="#f08a24"/>
+  <circle cx="36" cy="28" r="4" fill="#f2b01e"/>
+  <circle cx="6" cy="104" r="3" fill="#f2b01e"/>
+  <circle cx="58" cy="10" r="3" fill="#f08a24"/>
+  <!-- plate -->
+  <circle cx="140" cy="130" r="116" fill="#fffaf0" stroke="#e8dcc0" stroke-width="5"/>
+  <circle cx="140" cy="130" r="98" fill="#f6edd6"/>
+  <!-- lettuce -->
+  <g fill="#5cae6b">
+    <path d="M70 120C58 82 106 60 134 78C116 96 104 122 70 120Z"/>
+    <path d="M150 62C186 44 222 76 208 108C184 102 162 90 150 62Z"/>
+    <path d="M96 190C70 168 88 134 122 142C122 164 116 184 96 190Z"/>
+    <path d="M178 196C176 164 206 146 224 164C216 186 202 198 178 196Z"/>
+  </g>
+  <g fill="none" stroke="#3f8a52" stroke-width="2.5" stroke-linecap="round">
+    <path d="M74 118C92 100 108 88 128 80"/>
+    <path d="M152 66C172 74 192 90 206 106"/>
+    <path d="M100 186C108 168 114 156 120 146"/>
+    <path d="M182 192C192 178 204 170 220 166"/>
+  </g>
+  <!-- tomato wedges -->
+  <g>
+    <path d="M118 118a24 24 0 0 1 44 0c-12 8-32 8-44 0Z" fill="#e5483a"/>
+    <path d="M124 118a18 18 0 0 1 32 0c-9 5-23 5-32 0Z" fill="#f0796b"/>
+    <path d="M168 150a24 24 0 0 1 44 0c-12 8-32 8-44 0Z" fill="#e5483a" transform="rotate(30 190 150)"/>
+    <path d="M174 150a18 18 0 0 1 32 0c-9 5-23 5-32 0Z" fill="#f0796b" transform="rotate(30 190 150)"/>
+    <path d="M70 160a24 24 0 0 1 44 0c-12 8-32 8-44 0Z" fill="#e5483a" transform="rotate(-25 92 160)"/>
+    <path d="M76 160a18 18 0 0 1 32 0c-9 5-23 5-32 0Z" fill="#f0796b" transform="rotate(-25 92 160)"/>
+  </g>
+  <!-- cucumber slices -->
+  <g>
+    <circle cx="100" cy="100" r="19" fill="#a9d68f" stroke="#4c9a5f" stroke-width="3"/>
+    <circle cx="100" cy="100" r="12" fill="#d3ecbf"/>
+    <g fill="#8cc272"><circle cx="95" cy="98" r="1.8"/><circle cx="102" cy="94" r="1.8"/><circle cx="104" cy="104" r="1.8"/><circle cx="96" cy="106" r="1.8"/></g>
+    <circle cx="196" cy="118" r="19" fill="#a9d68f" stroke="#4c9a5f" stroke-width="3"/>
+    <circle cx="196" cy="118" r="12" fill="#d3ecbf"/>
+    <g fill="#8cc272"><circle cx="191" cy="116" r="1.8"/><circle cx="198" cy="112" r="1.8"/><circle cx="200" cy="122" r="1.8"/><circle cx="192" cy="124" r="1.8"/></g>
+    <circle cx="140" cy="190" r="19" fill="#a9d68f" stroke="#4c9a5f" stroke-width="3"/>
+    <circle cx="140" cy="190" r="12" fill="#d3ecbf"/>
+    <g fill="#8cc272"><circle cx="135" cy="188" r="1.8"/><circle cx="142" cy="184" r="1.8"/><circle cx="144" cy="194" r="1.8"/><circle cx="136" cy="196" r="1.8"/></g>
+  </g>
+  <!-- egg halves -->
+  <g>
+    <ellipse cx="150" cy="150" rx="19" ry="23" fill="#ffffff" stroke="#e8dcc0" stroke-width="3" transform="rotate(20 150 150)"/>
+    <circle cx="150" cy="150" r="9" fill="#f6b733"/>
+    <ellipse cx="118" cy="168" rx="17" ry="21" fill="#ffffff" stroke="#e8dcc0" stroke-width="3" transform="rotate(-15 118 168)"/>
+    <circle cx="118" cy="168" r="8" fill="#f6b733"/>
+  </g>
+  <!-- olives, seeds, herbs -->
+  <g fill="#3b3a35"><circle cx="128" cy="142" r="6"/><circle cx="176" cy="92" r="6"/><circle cx="86" cy="140" r="5"/></g>
+  <g fill="#fffaf0"><circle cx="128" cy="142" r="2"/><circle cx="176" cy="92" r="2"/><circle cx="86" cy="140" r="1.8"/></g>
+  <g fill="#f2d28a"><circle cx="160" cy="116" r="2"/><circle cx="108" cy="130" r="2"/><circle cx="188" cy="176" r="2"/><circle cx="150" cy="104" r="2"/><circle cx="120" cy="206" r="2"/></g>
+  <path d="M134 108c8-10 20-6 22 2-8 8-18 8-22-2Z" fill="#2f7a47"/>
+</svg>

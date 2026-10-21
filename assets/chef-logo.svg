@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-label="NutriChef logo">
+  <!-- hat outline (dark) then fill (cream) so the puffs read as one shape -->
+  <g fill="#1b4d32">
+    <circle cx="23" cy="27" r="13"/>
+    <circle cx="49" cy="27" r="13"/>
+    <circle cx="36" cy="20" r="14"/>
+    <rect x="20" y="30" width="32" height="20" rx="3"/>
+  </g>
+  <g fill="#fbf6e9">
+    <circle cx="23" cy="27" r="10"/>
+    <circle cx="49" cy="27" r="10"/>
+    <circle cx="36" cy="20" r="11"/>
+    <rect x="23" y="30" width="26" height="17" rx="2"/>
+  </g>
+  <rect x="20" y="44" width="32" height="9" rx="3" fill="#1b4d32"/>
+  <path d="M28 33v8M36 33v8M44 33v8" stroke="#c8d8c8" stroke-width="2" stroke-linecap="round"/>
+  <!-- leaves -->
+  <path d="M30 70c-8-6-8-16 2-20 2 10-2 16-2 20z" fill="#4c9a5f"/>
+  <path d="M42 70c8-6 8-16-2-20-2 10 2 16 2 20z" fill="#2f7a47"/>
+</svg>

@@ -8,7 +8,7 @@ compatibility_date = "2025-01-01"
 ALLOWED_ORIGINS = "https://abdelrahmankatkat.github.io"
 # true = also accept http://localhost and http://127.0.0.1 on any port (for testing on your PC).
 # Set to "false" before a public launch.
-ALLOW_LOCALHOST = "true"
+ALLOW_LOCALHOST = "false"
 # gemini-2.5-* is only served to accounts that already used it (new keys get 404). Alternative: "gemini-3.8-flash" (more accurate, costlier).
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 # Used once if the main model stays busy (503) after retries.
@@ -21,7 +21,7 @@ name = "RATE_LIMITER"
 namespace_id = "1001"
 
   [ratelimits.simple]
-  limit = 5
+  limit = 10
   period = 60
 
 # Scan counter: one data point per successful scan (outcome only). Query it in the Cloudflare dashboard.

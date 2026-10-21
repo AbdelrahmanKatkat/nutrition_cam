@@ -53,9 +53,11 @@ The Worker has an origin allow-list, per-IP rate limit, payload validation and a
 |---|---|---|---|
 | Meal photo | Sent to the Worker, then to Google Gemini. Not stored by the Worker. | Google, under its API terms | Yes |
 | Meal description | Sent with the photo | Google, under its API terms | Possibly |
+| NutriChef recipe text and chat messages | Sent to the Worker, then to Gemini. Not stored by the Worker. | Google, under its API terms | Possibly (anything you type) |
+| NutriChef analysis cache | Browser `localStorage` only (recipes, no chat) | The visitor's browser | No |
 | Scan history (thumbnail, name, kcal) | Browser `localStorage` only | The visitor's browser | Yes, on the device only |
 | Settings (two service ticks) | Browser `localStorage` only | The visitor's browser | No |
-| Scan counter | Cloudflare Analytics Engine: one data point per successful scan (food / not food). No IP address, photo, description or cookie. | Cloudflare | No |
+| Request counter | Cloudflare Analytics Engine: one data point per successful request, with only its kind (`food`, `not_food`, `recipe`, `chat`, `recipe_search`, `recipe_create`). No IP address, photo, text or cookie. | Cloudflare | No |
 | Page visits, countries, devices | Cloudflare Web Analytics: cookie-free beacon. No personal data. | Cloudflare | No |
 
 **No cookies are set by the site, the Worker or the analytics.** Browser storage (`localStorage`) is used only on the device.

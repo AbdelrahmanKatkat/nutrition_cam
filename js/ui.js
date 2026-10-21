@@ -5,12 +5,7 @@
 
 import { CONFIG } from './config.js';
 
-const $ = (id) => document.getElementById(id);
-
-/** Escape text before putting it in innerHTML (OFF data is user-contributed). */
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
-  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-));
+import { $, esc } from './dom.js';
 
 /** Show the chosen photo in the dropzone. */
 export function showPreview(dataUrl) {

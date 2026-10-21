@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1b4d32">
+  <title>NutriChef – Cook it, understand it</title>
+  <link rel="icon" href="assets/chef-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/chef.css">
+</head>
+<body class="chef-body">
+  <main class="chef">
+
+    <!-- ============ LEFT: search, results, selected recipe ============ -->
+    <aside class="chef-left" aria-label="Search recipes">
+      <img class="deco deco--salad" src="assets/salad-bowl.svg" alt="" aria-hidden="true">
+
+      <header class="chef-brand">
+        <img src="assets/chef-logo.svg" alt="" width="60" height="60">
+        <div>
+          <h1>NutriChef</h1>
+          <p class="tagline">Cook it. Understand it.</p>
+        </div>
+      </header>
+
+      <nav class="app-switch" aria-label="Switch app">
+        <a href="index.html">NutriSnap</a>
+        <a href="chef.html" aria-current="page">NutriChef</a>
+      </nav>
+
+      <h2 class="section-title">Search Recipes</h2>
+
+      <form id="search-form" class="search" role="search">
+        <input id="search-input" type="search" maxlength="80" autocomplete="off"
+               placeholder="e.g. Glazed Salmon" aria-label="Search recipes">
+        <button class="search__btn" type="submit" aria-label="Search">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+        </button>
+      </form>
+
+      <div class="segmented" role="group" aria-label="Search by">
+        <button type="button" class="seg is-on" data-mode="name" aria-pressed="true">Dish</button>
+        <button type="button" class="seg" data-mode="ingredient" aria-pressed="false">Ingredient</button>
+        <button type="button" class="seg seg--accent" id="surprise-btn">Surprise me</button>
+      </div>
+
+      <div id="category-chips" class="chip-row" aria-label="Browse by category"></div>
+
+      <p id="search-note" class="search-note" role="status" aria-live="polite">Search by dish, or pick a category.</p>
+
+      <!-- Shown only when a search finds nothing: spend an AI call on purpose, not by default -->
+      <div id="fallback-box" class="fallback" hidden>
+        <button id="smart-btn" class="btn btn--light" type="button">Search smarter with Gemini</button>
+        <button id="create-btn" class="btn btn--dark" type="button">Create this recipe with Gemini</button>
+      </div>
+
+      <ul id="results" class="results" aria-label="Recipe results"></ul>
+
+      <article id="selected-card" class="selected" hidden aria-live="polite">
+        <img id="selected-img" alt="">
+        <div class="selected__body">
+          <p class="selected__label">Selected</p>
+          <h2 id="selected-title"></h2>
+          <div id="selected-tags" class="selected__tags"></div>
+          <p id="selected-meta" class="selected__meta"></p>
+          <h3>Base Ingredients</h3>
+          <ul id="ingredients-list" class="ingredients"></ul>
+          <p id="selected-source" class="selected__source"></p>
+        </div>
+      </article>
+    </aside>
+
+    <!-- ============ CENTER + RIGHT ============ -->
+    <div class="chef-main">
+
+      <section class="card profile" aria-labelledby="profile-title">
+        <h2 id="profile-title">Nutritional &amp; Scientific Profile</h2>
+        <p id="chef-status" class="chef-status" role="status" aria-live="polite" hidden></p>
+
+        <!-- empty -->
+        <div id="profile-empty" class="profile__state">
+          <img src="assets/salad-bowl.svg" alt="" width="150" height="150">
+          <p><strong>Pick a recipe to begin.</strong></p>
+          <p>You will see its nutrition, vitamins, the chemistry behind each step and the best temperatures.</p>
+        </div>
+
+        <!-- loading -->
+        <div id="profile-loading" class="profile__state" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <p><strong id="loading-title">Analysing…</strong></p>
+          <p>Gemini is working out the nutrition and the food science. This can take 10–30 seconds.</p>
+        </div>
+
+        <!-- error -->
+        <div id="profile-error" class="profile__state" hidden>
+          <p><strong id="error-title">Could not analyse this recipe.</strong></p>
+          <p id="error-text"></p>
+          <button id="retry-btn" class="btn btn--dark" type="button">Try again</button>
+        </div>
+
+        <!-- ready -->
+        <div id="profile-content" hidden>
+          <div class="profile__meta">
+            <div id="meta-chips" class="meta-chips"></div>
+            <div class="stepper" role="group" aria-label="Servings">
+              <span id="servings-label">Servings</span>
+              <button id="servings-minus" class="stepper__btn" type="button" aria-label="Fewer servings">−</button>
+              <output id="servings-value" aria-live="polite" aria-labelledby="servings-label">4</output>
+              <button id="servings-plus" class="stepper__btn" type="button" aria-label="More servings">+</button>
+            </div>
+          </div>
+
+          <div class="profile__grid">
+            <section class="panel-in" aria-labelledby="facts-h">
+              <h3 id="facts-h">Nutritional Facts <small>per serving</small></h3>
+              <div id="rings" class="rings"></div>
+            </section>
+
+            <section class="panel-in" aria-labelledby="vit-h">
+              <h3 id="vit-h">Essential Vitamins <small>% daily value</small></h3>
+              <ul id="vitamins" class="vitamins"></ul>
+            </section>
+          </div>
+
+          <section class="panel-in panel-in--insight" aria-labelledby="sci-h">
+            <h3 id="sci-h">Scientific Insight</h3>
+            <h4>Explanation of Chemical Behavior</h4>
+            <ul id="science" class="insights"></ul>
+            <h4>Cooking Theory &amp; Optimal Temp</h4>
+            <ul id="theory" class="insights"></ul>
+            <p id="safety" class="safety"></p>
+          </section>
+
+          <p id="assumptions" class="assumptions"></p>
+        </div>
+      </section>
+
+      <div class="chef-right">
+        <section class="card card--facts" aria-labelledby="steps-h">
+          <h2 id="steps-h">Instructions &amp; Making Steps</h2>
+          <ol id="steps" class="steps"><li class="steps__empty">Select a recipe to see the steps.</li></ol>
+        </section>
+
+        <section class="card card--facts chat" aria-labelledby="chat-h">
+          <h2 id="chat-h">Gemini AI Assistant</h2>
+          <p id="chat-sub" class="chat__sub">Select a recipe, then ask how to make it healthier.</p>
+          <div id="chat-log" class="chat__log" role="log" aria-live="polite"></div>
+          <div id="chat-chips" class="chip-row chat__chips"></div>
+          <form id="chat-form" class="chat__form">
+            <input id="chat-input" type="text" autocomplete="off" disabled
+                   placeholder="Ask how to make it more healthy…" aria-label="Message the assistant">
+            <button id="chat-send" class="chat__send" type="submit" disabled aria-label="Send">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 20v-6l10-2-10-2V4l19 8z"/></svg>
+            </button>
+          </form>
+          <p class="chat__note">Estimates only, not medical advice.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/chef.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 
 import { CONFIG } from '../config.js';
 
-const KEYS = { settings: 'nutrisnap.settings', history: 'nutrisnap.history' };
+const KEYS = { settings: 'nutrisnap.settings', history: 'nutrisnap.history', chefCache: 'nutrisnap.chef.cache' };
 
 function read(key, fallback) {
   try {
@@ -53,4 +53,22 @@ export function addHistory(entry) {
 
 export function clearHistory() {
   write(KEYS.history, []);
+}
+
+/* ---- NutriChef: remember analysed recipes so reopening one costs no AI call ---- */
+
+const CHEF_CACHE_VERSION = 1; // bump when the analysis shape changes
+
+/** @returns {object|null} the saved analysis for a recipe id */
+export function getChefAnalysis(id) {
+  const cache = read(KEYS.chefCache, { v: CHEF_CACHE_VERSION, items: [] });
+  if (cache.v !== CHEF_CACHE_VERSION) return null;
+  return cache.items.find((entry) => entry.id === id)?.analysis ?? null;
+}
+
+export function setChefAnalysis(id, analysis) {
+  const cache = read(KEYS.chefCache, { v: CHEF_CACHE_VERSION, items: [] });
+  const items = cache.v === CHEF_CACHE_VERSION ? cache.items : [];
+  const next = [{ id, analysis }, ...items.filter((entry) => entry.id !== id)].slice(0, CONFIG.chef.cacheSize);
+  while (next.length && !write(KEYS.chefCache, { v: CHEF_CACHE_VERSION, items: next })) next.pop();
 }

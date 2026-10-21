@@ -1,9 +1,15 @@
 # NutriSnap – Snap & Know Your Food
 
-A static, no-build web app. Take or upload a meal photo on your phone, and:
+A static, no-build site with two pages that share one design and one Gemini proxy:
 
+**NutriSnap** (`index.html`): take or upload a meal photo on your phone.
 - **Gemini AI** estimates the meal's calories and macros.
 - **Open Food Facts** returns nutrition facts, Nutri-Score and labels for a product (by barcode, or by the meal name).
+
+**NutriChef** (`chef.html`): search a recipe and learn what is in it and why it works.
+- **TheMealDB** (free recipe database) supplies recipes, photos, ingredients and instructions.
+- **Gemini AI** adds nutrition per serving, vitamins, the chemistry and cooking theory with optimal temperatures, clear making steps, and a chat to make the recipe healthier or higher in protein.
+- Details: [`docs/NUTRICHEF.md`](docs/NUTRICHEF.md).
 
 Design reference: [`docs/design-reference.jpg`](docs/design-reference.jpg).
 
@@ -40,6 +46,7 @@ Check your real limits in [AI Studio](https://aistudio.google.com/rate-limit).
 
 - **Photos go to Google Gemini** on every AI scan (through the Worker). Show a notice to visitors before a public launch.
 - **No cookies.** The site stores only settings and scan history in the visitor's own browser (`localStorage`).
+- **Recipe text and chat messages** typed in NutriChef are also sent to Gemini. The browser caches recipe analyses (no chat) locally.
 - **Counters without personal data.** Cloudflare Web Analytics (visits, countries, devices) is cookie-free, and the Worker counts each successful scan as food or not food, with no IP address, photo or description.
 - Setup for the analytics: see the comments in `js/config.js` (`webAnalyticsToken`) and `proxy/wrangler.toml` (`SCANS`).
 
@@ -54,20 +61,31 @@ Details are in [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md#6-privacy).
 ## Project structure
 
 ```
-index.html                  page markup (two panels + dialogs)
-css/styles.css              all styling (mobile-first, CSS variables for the palette)
+index.html                  NutriSnap page markup
+chef.html                   NutriChef page markup
+css/styles.css              shared styling + NutriSnap (CSS variables for the palette)
+css/chef.css                NutriChef styling
 js/
-  app.js                    entry point – events and the scan flow
-  ui.js                     DOM rendering only
-  config.js                 model name, URLs, limits, daily values
+  app.js, ui.js             NutriSnap controller and view
+  chef.js, chef-ui.js       NutriChef controller and view
+  dom.js                    shared helpers ($, esc, safe markdown)
+  config.js                 URLs, limits, daily values
   services/
-    gemini.js               calls the proxy (timeout, 429 handling)
+    proxy.js                the one place the browser calls the Worker (timeout, 429)
+    gemini.js               NutriSnap: meal photo -> estimate
+    chef-ai.js              NutriChef: analysis, chat, smart search, create recipe
+    mealdb.js               TheMealDB client
     openfoodfacts.js        barcode lookup + text search
     image.js                resize photo, barcode detection
-    storage.js              localStorage: settings + history
-assets/logo.svg
-proxy/                      Cloudflare Worker that holds the Gemini key (own README)
+    storage.js              localStorage: settings, history, analysis cache
+assets/                     logos and illustrations (SVG)
+proxy/                      Cloudflare Worker: key, prompts, gates (own README)
+  src/index.js              gates + routing
+  src/gemini.js             retries, fallback model, time budget
+  src/tasks.js              one validator + prompt + schema per action
+  src/prompts/              scan.js (NutriSnap), chef.js (NutriChef)
 docs/
+  NUTRICHEF.md              NutriChef design, APIs, prompts
   IMPROVEMENTS.md           roadmap and known limitations
   AGENTIC_AI.md             how to add agentic AI later
   design-reference.jpg

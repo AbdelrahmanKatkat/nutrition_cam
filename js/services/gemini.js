@@ -7,7 +7,7 @@
  * @module services/gemini
  */
 
-import { CONFIG } from '../config.js';
+import { askProxy } from './proxy.js';
 
 /**
  * @typedef {Object} MealPrediction
@@ -23,54 +23,19 @@ import { CONFIG } from '../config.js';
  * @property {string}   notes        assumptions (portion size etc.)
  */
 
-/** Thrown on HTTP 429 so the UI can show a countdown instead of a generic error. */
-export class RateLimitError extends Error {
-  constructor(retryAfterS) {
-    super(`Rate limit reached. Try again in ${retryAfterS}s.`);
-    this.name = 'RateLimitError';
-    this.retryAfterS = retryAfterS;
-  }
-}
+export { RateLimitError } from './proxy.js';
 
 /**
  * Ask the proxy (which calls Gemini with the secret key) to analyse a meal photo.
- * The prompt and response schema live in proxy/src/index.js.
+ * The prompt and response schema live in proxy/src/prompts/scan.js.
  * @param {{base64:string, mimeType:string}} image
  * @param {string} [hint] optional user description of the components ("2 eggs, toast, olive oil")
  * @returns {Promise<MealPrediction>}
  * @throws {RateLimitError} on HTTP 429
  */
 export async function predictMeal(image, hint = '') {
-  const { url, timeoutMs } = CONFIG.proxy;
-  if (!url) throw new Error('Proxy URL not set. Deploy the proxy (proxy/README.md) and set proxy.url in js/config.js.');
-
-  let res;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: image.base64, mimeType: image.mimeType, hint }),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-  } catch (err) {
-    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
-      throw new Error(`The request timed out after ${Math.round(timeoutMs / 1000)}s. Please try again.`);
-    }
-    // A browser reports a blocked (CORS) response the same way as no network, so name both causes.
-    throw new Error(
-      `Could not reach the proxy. Check your internet connection. ` +
-      `If you opened this page from ${location.origin}, that address must be allowed in ALLOWED_ORIGINS or ALLOW_LOCALHOST (proxy/wrangler.toml).`,
-    );
-  }
-
-  if (res.status === 429) {
-    const wait = parseInt(res.headers.get('Retry-After'), 10);
-    throw new RateLimitError(Number.isFinite(wait) ? wait : CONFIG.scan.defaultRetryAfterS);
-  }
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status}).`);
-  return normalize(data.prediction || {});
+  const raw = await askProxy('scan', { image: image.base64, mimeType: image.mimeType, hint });
+  return normalize(raw);
 }
 
 /** Clamp / coerce model output so the UI never has to defend against odd values. */
