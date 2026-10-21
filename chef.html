@@ -90,7 +90,7 @@
         <div id="profile-loading" class="profile__state" hidden>
           <div class="spinner" aria-hidden="true"></div>
           <p><strong id="loading-title">Analysing…</strong></p>
-          <p>Gemini is working out the nutrition and the food science. This can take 10–30 seconds.</p>
+          <p>Gemini is working out the nutrition and the food science. This usually takes 5–30 seconds.</p>
         </div>
 
         <!-- error -->
@@ -112,9 +112,17 @@
             </div>
           </div>
 
+          <p id="serving-info" class="serving-info"></p>
+          <details class="serving-help">
+            <summary>What does “serving” mean?</summary>
+            <p>A <strong>serving</strong> is one portion of the <em>finished</em> dish: the whole recipe divided by the number of servings. Every nutrition value on this page is for <strong>one</strong> serving.</p>
+            <p>Set the number to how many portions you will actually split the dish into. A bigger number means smaller portions, so the calories, protein and vitamins per serving go down; a smaller number means bigger portions. Nothing is re-calculated by the AI, it just divides.</p>
+            <p>Weights are for the cooked dish and are estimates.</p>
+          </details>
+
           <div class="profile__grid">
             <section class="panel-in" aria-labelledby="facts-h">
-              <h3 id="facts-h">Nutritional Facts <small>per serving</small></h3>
+              <h3 id="facts-h">Nutritional Facts <small id="facts-basis">per serving</small></h3>
               <div id="rings" class="rings"></div>
             </section>
 

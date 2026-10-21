@@ -18,6 +18,7 @@ import {
 } from './services/mealdb.js';
 import { analyseRecipe, perServing, chatAboutRecipe, interpretSearch, createRecipe } from './services/chef-ai.js';
 import { RateLimitError } from './services/proxy.js';
+import { findDishPhoto } from './services/photo.js';
 import * as store from './services/storage.js';
 
 /** In-memory state for the current visit. */
@@ -25,6 +26,7 @@ const state = {
   mode: 'name',        // 'name' | 'ingredient'
   query: '',
   results: [],
+  shown: 10,           // how many results are visible (the rest sit behind "Show more")
   recipe: null,
   analysis: null,
   servings: 4,
@@ -54,7 +56,8 @@ function aiErrorText(err) {
 
 function showResults(list, note) {
   state.results = list;
-  ui.renderResults(list, state.recipe?.id);
+  state.shown = ui.RESULTS_PAGE;
+  ui.renderResults(list, state.recipe?.id, state.shown);
   ui.setSearchNote(note);
   // The free database is small (about 790 recipes): offer Gemini whenever a search leaves few results.
   ui.showFallback(Boolean(state.query) && list.length < 5);
@@ -178,6 +181,7 @@ async function selectRecipe(source) {
 
   ui.markActiveResult(recipe.id);
   ui.renderSelected(recipe);
+  if (recipe.generated) attachPhoto(recipe, token);
   ui.renderSteps(recipe, null); // the database's own steps show immediately, before the AI answers
   ui.resetChat(recipe.title);
   history.replaceState(null, '', recipe.generated ? location.pathname : `?r=${encodeURIComponent(recipe.id)}`);
@@ -186,6 +190,15 @@ async function selectRecipe(source) {
   const cached = recipe.generated ? null : store.getChefAnalysis(recipe.id);
   if (cached) { applyAnalysis(cached); return; }
   await runAnalysis(token);
+}
+
+/** Gemini-written recipes have no picture: look the dish up on Wikipedia (silently skipped if nothing fits). */
+async function attachPhoto(recipe, token) {
+  const photo = await findDishPhoto(recipe.imageQuery || recipe.title);
+  if (!photo || token !== state.selectToken) return;
+  recipe.photo = photo.url;
+  recipe.photoCredit = { title: photo.title, url: photo.pageUrl };
+  ui.renderSelected(recipe, state.analysis);
 }
 
 async function runAnalysis(token = state.selectToken) {
@@ -303,6 +316,11 @@ $('category-chips').addEventListener('click', (e) => {
   if (chip) browseCategory(chip.dataset.category);
 });
 $('results').addEventListener('click', (e) => {
+  if (e.target.closest('[data-more]')) {
+    state.shown += ui.RESULTS_PAGE;
+    ui.renderResults(state.results, state.recipe?.id, state.shown);
+    return;
+  }
   const btn = e.target.closest('.result[data-id]');
   if (btn) selectRecipe(btn.dataset.id);
 });

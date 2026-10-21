@@ -44,8 +44,11 @@ export function setFallbackBusy(busy) {
   for (const id of ['smart-btn', 'create-btn']) $(id).disabled = busy;
 }
 
-export function renderResults(list, activeId) {
-  $('results').innerHTML = list.map((r) => `
+export const RESULTS_PAGE = 10;
+
+/** Show the first `shown` results; the rest sit behind a "Show more" button (no nested scrolling). */
+export function renderResults(list, activeId, shown = RESULTS_PAGE) {
+  const rows = list.slice(0, shown).map((r) => `
     <li>
       <button type="button" class="result${r.id === activeId ? ' is-active' : ''}" data-id="${esc(r.id)}">
         ${r.thumb ? `<img src="${esc(imageUrl(r.thumb, 'small'))}" alt="" loading="lazy" width="56" height="56">` : '<span class="result__ph" aria-hidden="true"></span>'}
@@ -55,6 +58,10 @@ export function renderResults(list, activeId) {
         </span>
       </button>
     </li>`).join('');
+  const left = list.length - shown;
+  $('results').innerHTML = rows + (left > 0
+    ? `<li><button type="button" class="btn btn--light more-btn" data-more>Show ${Math.min(RESULTS_PAGE, left)} more (${left} left)</button></li>`
+    : '');
 }
 
 export function markActiveResult(id) {
@@ -69,7 +76,8 @@ export function markActiveResult(id) {
 export function renderSelected(recipe, analysis = null) {
   $('selected-card').hidden = false;
   const img = $('selected-img');
-  if (recipe.thumb) { img.src = imageUrl(recipe.thumb, 'medium'); img.alt = recipe.title; img.hidden = false; }
+  const photo = recipe.photo || (recipe.thumb ? imageUrl(recipe.thumb, 'medium') : '');
+  if (photo) { img.src = photo; img.alt = recipe.title; img.hidden = false; }
   else { img.removeAttribute('src'); img.alt = ''; img.hidden = true; }
 
   $('selected-title').textContent = recipe.title;
@@ -86,8 +94,11 @@ export function renderSelected(recipe, analysis = null) {
   const links = [];
   if (recipe.youtube) links.push(`<a href="${esc(recipe.youtube)}" target="_blank" rel="noopener noreferrer">Watch video</a>`);
   if (recipe.source) links.push(`<a href="${esc(recipe.source)}" target="_blank" rel="noopener noreferrer">Original recipe</a>`);
+  const credit = recipe.photoCredit
+    ? ` Photo: <a href="${esc(recipe.photoCredit.url)}" target="_blank" rel="noopener noreferrer">Wikipedia, ${esc(recipe.photoCredit.title)}</a>.`
+    : '';
   $('selected-source').innerHTML = recipe.generated
-    ? `Created by Gemini. ${esc(recipe.note || '')}`
+    ? `Created by Gemini. ${esc(recipe.note || '')}${credit}`
     : links.join(' · ');
 }
 
@@ -148,6 +159,16 @@ export function renderProfile(analysis, per, servings) {
   ].filter(Boolean).map((t) => `<span class="badge">${esc(t)}</span>`).join('');
 
   $('servings-value').textContent = servings;
+
+  // Make "serving" concrete: how heavy is one, and what does it look like?
+  const grams = per.servingGrams;
+  $('facts-basis').textContent = grams ? `per serving ≈ ${grams}\u00a0g` : 'per serving';
+  const bits = [];
+  if (analysis.yieldGrams) bits.push(`Whole dish ≈ ${analysis.yieldGrams.toLocaleString()} g`);
+  if (grams) bits.push(`1 serving ≈ ${grams} g`);
+  if (analysis.servingLabel && servings === analysis.baseServings) bits.push(analysis.servingLabel);
+  $('serving-info').textContent = bits.join(' · ');
+  $('serving-info').hidden = bits.length === 0;
   $('rings').innerHTML = [
     ring({ value: per.kcal, max: dv.kcal, color: 'var(--green-800)', label: 'kcal', unit: '' }),
     ring({ value: per.proteinG, max: dv.protein, color: 'var(--blue)', label: 'Protein', unit: 'g' }),

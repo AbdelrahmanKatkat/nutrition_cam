@@ -106,6 +106,7 @@ export function fromGenerated(raw) {
       .filter((i) => i.name),
     instructions: String(raw.instructions || '').trim(),
     servings: Number(raw.servings) || 0,
+    imageQuery: String(raw.imageQuery || '').trim(),
     note: String(raw.note || ''),
     source: '',
     youtube: '',

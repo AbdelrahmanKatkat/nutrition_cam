@@ -46,6 +46,7 @@ Check your real limits in [AI Studio](https://aistudio.google.com/rate-limit).
 
 - **Photos go to Google Gemini** on every AI scan (through the Worker). Show a notice to visitors before a public launch.
 - **No cookies.** The site stores only settings and scan history in the visitor's own browser (`localStorage`).
+- **Dish photos for Gemini-written recipes** are fetched from Wikipedia by the browser (Wikimedia sees the dish name and the visitor's IP).
 - **Recipe text and chat messages** typed in NutriChef are also sent to Gemini. The browser caches recipe analyses (no chat) locally.
 - **Counters without personal data.** Cloudflare Web Analytics (visits, countries, devices) is cookie-free, and the Worker counts each successful scan as food or not food, with no IP address, photo or description.
 - Setup for the analytics: see the comments in `js/config.js` (`webAnalyticsToken`) and `proxy/wrangler.toml` (`SCANS`).

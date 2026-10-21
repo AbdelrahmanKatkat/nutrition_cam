@@ -26,6 +26,8 @@ function temps(c, f) {
 /**
  * @typedef {Object} Analysis
  * @property {number} baseServings     servings the AI assumed (nutrition totals are for the whole recipe)
+ * @property {number} yieldGrams       total weight of the finished dish
+ * @property {string} servingLabel     plain-language picture of one serving, e.g. "about 1 bowl (300 g)"
  * @property {number} prepMinutes
  * @property {number} cookMinutes
  * @property {string} difficulty
@@ -66,6 +68,9 @@ export function normalizeAnalysis(raw) {
 
   return {
     baseServings: Math.min(24, Math.max(1, int(raw.servings) || 4)),
+    // Finished weight; fall back to the raw ingredient weight if the model left it out.
+    yieldGrams: int(raw.yieldGrams) || Math.round(sum('grams')),
+    servingLabel: str(raw.servingLabel, 120),
     prepMinutes: int(raw.prepMinutes),
     cookMinutes: int(raw.cookMinutes),
     difficulty: ['Easy', 'Medium', 'Hard'].includes(raw.difficulty) ? raw.difficulty : 'Medium',
@@ -108,6 +113,7 @@ export function perServing(analysis, servings) {
     carbsG: Math.round(t.carbsG / n),
     fatG: Math.round(t.fatG / n),
     fiberG: Math.round(t.fiberG / n),
+    servingGrams: analysis.yieldGrams ? Math.round(analysis.yieldGrams / n) : 0,
     vitamins: analysis.vitamins.map((v) => ({ ...v, percentDV: Math.min(300, Math.round((v.percentDV * analysis.baseServings) / n)) })),
   };
 }

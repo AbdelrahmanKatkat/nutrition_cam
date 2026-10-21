@@ -54,6 +54,7 @@ The Worker has an origin allow-list, per-IP rate limit, payload validation and a
 | Meal photo | Sent to the Worker, then to Google Gemini. Not stored by the Worker. | Google, under its API terms | Yes |
 | Meal description | Sent with the photo | Google, under its API terms | Possibly |
 | NutriChef recipe text and chat messages | Sent to the Worker, then to Gemini. Not stored by the Worker. | Google, under its API terms | Possibly (anything you type) |
+| Dish name for a photo (Gemini-written recipes only) | Sent from the browser to Wikipedia | Wikimedia | The visitor's IP is visible to Wikimedia |
 | NutriChef analysis cache | Browser `localStorage` only (recipes, no chat) | The visitor's browser | No |
 | Scan history (thumbnail, name, kcal) | Browser `localStorage` only | The visitor's browser | Yes, on the device only |
 | Settings (two service ticks) | Browser `localStorage` only | The visitor's browser | No |

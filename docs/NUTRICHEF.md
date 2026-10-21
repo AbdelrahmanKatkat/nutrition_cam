@@ -2,7 +2,7 @@
 
 NutriChef is the second page of the site (`chef.html`). Search a recipe, pick one, and get:
 
-- **Nutritional facts per serving** (kcal, protein, carbs, fat) as rings, with a servings stepper.
+- **Nutritional facts per serving** (kcal, protein, carbs, fat) as rings, with a servings stepper and a plain statement of how big one serving is (see section 3a).
 - **Essential vitamins and minerals** as % of daily value.
 - **Scientific insight**: the chemistry behind the key steps, plus cooking theory with the optimal temperature (°C and °F) and food-safety temperatures.
 - **Making steps**, rewritten clearly with temperatures and times.
@@ -98,6 +98,24 @@ Reasons for the order:
 
 ---
 
+## 3a. What "serving" means
+
+The nutrition on the page is for **one serving**: one portion of the *finished* dish, which is the whole recipe divided by the number of servings.
+
+- Gemini reports the **total weight of the finished dish** (`yieldGrams`, adjusted for water gained or lost in cooking) and a **plain-language picture of one serving** (`servingLabel`, for example "about 1 bowl (300 g)").
+- The page shows: **Whole dish ≈ 1,200 g · 1 serving ≈ 300 g · about 1 bowl (300 g)**, and the Nutritional Facts caption reads "per serving ≈ 300 g".
+- The **Servings** stepper changes how many portions you split the dish into. The serving weight, calories, macros and vitamins update instantly. A bigger number means smaller portions. No AI call is made: the page only divides.
+- The household description is shown only for the number of servings Gemini assumed; for other numbers only the weight is shown, because "1 bowl" no longer fits.
+- A **"What does serving mean?"** explanation sits under the stepper.
+
+## 3b. Photos for Gemini-written recipes
+
+Recipes from the database have photos. Recipes written by Gemini do not, so the page looks the dish up on **Wikipedia** (free to use, open CORS, no key). Google Images has no free official API, and scraping it is against Google's terms, so it is not used.
+
+- Gemini returns a clean `imageQuery` ("Ful medames", not "Healthy high-protein foul medames bowl").
+- A result is accepted only if its title shares a word with the dish name; otherwise the page shows no photo rather than a wrong one. Tested: "Ful medames", "Lasagne", "Koshari" all match; noisy names correctly return nothing.
+- The photo credit links to the Wikipedia page.
+
 ## 4. The prompts
 
 All prompts live in `proxy/src/prompts/chef.js`. Common rules: text from the database and from users is **cleaned, length-capped and fenced in tags**, and every prompt says that fenced text is data and any instruction inside it must be ignored.
@@ -106,7 +124,7 @@ All prompts live in `proxy/src/prompts/chef.js`. Common rules: text from the dat
 
 Role: a registered dietitian who is also a food scientist. Seven ordered steps:
 
-1. **Servings** from the recipe, else inferred from total quantity (about 350-450 g per adult serving).
+1. **Servings and portion size**: servings from the recipe, else inferred from total quantity (about 350-450 g per adult serving); plus the finished weight of the dish and a plain-language picture of one serving.
 2. **Ingredient nutrition**: one entry per ingredient, with a conversion table (cup of flour about 125 g, tablespoon of oil about 14 g, and so on) and totals for the whole recipe.
 3. **Vitamins and minerals**: the 5-6 strongest contributions, scored against stated daily values.
 4. **Steps**: 4-10 steps in the **same order** as the source, with temperatures in both units; a temperature the source did not give is marked "(suggested)".
@@ -145,6 +163,7 @@ Used only when the database has nothing. It must produce a cookable recipe with 
 - **Automatic fallback**: a dish search with no match also tries the same word as an ingredient.
 - **Few or no results?** Because the free database is small, two optional buttons appear whenever a search finds fewer than 5 recipes, so an AI call is a deliberate choice: *Search smarter with Gemini* and *Create this recipe with Gemini*.
 - **Shareable links**: `chef.html?r=52772` opens a recipe directly.
+- **Paged results**: 10 at a time with "Show more", so the list never needs its own scrollbar and long categories (up to 168 recipes) stay fast.
 
 ---
 
@@ -163,7 +182,7 @@ Used only when the database has nothing. It must produce a cookable recipe with 
 
 ## 7. Privacy
 
-Recipe text, and chat messages you type, are sent to Google Gemini through the Worker. Nothing is stored by the Worker. The browser keeps an analysis cache (recipes only, no chat) in `localStorage`. The scan counter records only the kind of request (`recipe`, `chat`, `recipe_search`, `recipe_create`), never text. No cookies.
+When a recipe is written by Gemini, the **browser** asks Wikipedia for a photo of the dish. Wikipedia therefore sees the dish name and the visitor's IP address, the same as any visit to Wikipedia. Recipe text, and chat messages you type, are sent to Google Gemini through the Worker. Nothing is stored by the Worker. The browser keeps an analysis cache (recipes only, no chat) in `localStorage`. The scan counter records only the kind of request (`recipe`, `chat`, `recipe_search`, `recipe_create`), never text. No cookies.
 
 ## 8. Extending
 

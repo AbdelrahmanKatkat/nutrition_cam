@@ -7,7 +7,7 @@ import { sleep } from './util.js';
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const DEFAULT_RETRY_AFTER_S = 30;      // Gemini doesn't document a Retry-After header
-const ATTEMPT_TIMEOUT_MS = 25_000;     // longest single Gemini call
+const ATTEMPT_TIMEOUT_MS = 35_000;     // longest single Gemini call (a recipe analysis can take 20-30 s when Gemini is slow)
 const TOTAL_BUDGET_MS = 50_000;        // all attempts together; the browser waits 60 s
 const MIN_ATTEMPT_MS = 5_000;          // don't start an attempt with less time than this
 const RETRY_DELAYS_MS = [1500, 3000];  // back-off before attempts 2 and 3

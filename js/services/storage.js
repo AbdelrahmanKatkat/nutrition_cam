@@ -57,7 +57,7 @@ export function clearHistory() {
 
 /* ---- NutriChef: remember analysed recipes so reopening one costs no AI call ---- */
 
-const CHEF_CACHE_VERSION = 1; // bump when the analysis shape changes
+const CHEF_CACHE_VERSION = 2; // bump when the analysis shape changes
 
 /** @returns {object|null} the saved analysis for a recipe id */
 export function getChefAnalysis(id) {
