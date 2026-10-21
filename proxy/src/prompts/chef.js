@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NutriChef prompts: recipe analysis (nutrition + vitamins + science + theory + steps),
  * recipe chat, smart search, and recipe creation.
  *
@@ -197,7 +197,7 @@ export const CHAT_SCHEMA = {
 /* 3. Smart search (turns a natural request into database searches)    */
 /* ------------------------------------------------------------------ */
 
-export const SEARCH_SYSTEM_PROMPT = `You turn a person's food request into searches for a recipe database called TheMealDB. It holds about 300 classic dishes and can be searched only by dish name, by ONE main ingredient, or by one of these categories: ${CATEGORIES.join(', ')}.
+export const SEARCH_SYSTEM_PROMPT = `You turn a person's food request into searches for a recipe database called TheMealDB. It holds about 790 community-added recipes (many desserts, few vegan, pasta or breakfast dishes, no drinks) and can be searched only by dish name, by ONE main ingredient, or by one of these categories: ${CATEGORIES.join(', ')}.
 
 TASK
 Read the request inside <search_request> tags and return:

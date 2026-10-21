@@ -16,8 +16,8 @@ Design reference: [`chef-design-reference.jpg`](chef-design-reference.jpg).
 
 | Option | Key needed | Free tier | Verdict |
 |---|---|---|---|
-| **TheMealDB** | No (public test key `1`) | Free, no stated rate limit | **Chosen.** Photos, ingredients, instructions, categories; CORS is open so the browser calls it directly. About 300 classic dishes. |
-| Spoonacular | Yes | About 150 points per day | Much bigger catalogue and nutrition data, but needs a secret key (so a proxy route) and the quota is small. |
+| **TheMealDB** | No (public test key `1`) | Free, no stated rate limit | **Chosen.** Photos, ingredients, instructions, categories; CORS is open so the browser calls it directly. About **790 recipes** (measured by listing A to Z): 167 desserts but only 7 vegan, 12 pasta, 14 starters, 19 breakfast, and no smoothies. |
+| Spoonacular | Yes | **50 points per day**, backlink required, data may be cached for 1 hour only | Larger catalogue, but needs a secret key (a proxy route), the daily quota is tiny and the caching rule conflicts with our analysis cache. Not practical as a free replacement. |
 | Edamam | Yes | Limited, with attribution rules | Strong nutrition data, key required. |
 | Gemini alone | Already have | Shared quota | Can write any recipe, but costs a call per search and can invent details. Used only as a **fallback**. |
 
@@ -143,7 +143,7 @@ Used only when the database has nothing. It must produce a cookable recipe with 
 - **Category chips** loaded from the database.
 - **Surprise me** picks a random recipe.
 - **Automatic fallback**: a dish search with no match also tries the same word as an ingredient.
-- **Still nothing?** Two optional buttons appear, so an AI call is a deliberate choice: *Search smarter with Gemini* and *Create this recipe with Gemini*.
+- **Few or no results?** Because the free database is small, two optional buttons appear whenever a search finds fewer than 5 recipes, so an AI call is a deliberate choice: *Search smarter with Gemini* and *Create this recipe with Gemini*.
 - **Shareable links**: `chef.html?r=52772` opens a recipe directly.
 
 ---

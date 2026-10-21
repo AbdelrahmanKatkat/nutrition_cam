@@ -43,6 +43,7 @@
 .search-note.is-error { color: #b3261e; }
 
 .fallback { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: var(--cream-dark); }
+.fallback p { font-size: .85rem; color: var(--muted); }
 .fallback .btn { padding: 10px; font-size: .9rem; }
 
 /* results list */

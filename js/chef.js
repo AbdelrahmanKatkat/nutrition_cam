@@ -56,7 +56,8 @@ function showResults(list, note) {
   state.results = list;
   ui.renderResults(list, state.recipe?.id);
   ui.setSearchNote(note);
-  ui.showFallback(false);
+  // The free database is small (about 790 recipes): offer Gemini whenever a search leaves few results.
+  ui.showFallback(Boolean(state.query) && list.length < 5);
 }
 
 async function runSearch(rawQuery) {
@@ -89,6 +90,7 @@ async function runSearch(rawQuery) {
 
 async function browseCategory(name) {
   const token = ++state.searchToken;
+  state.query = '';
   $('search-input').value = '';
   ui.setActiveCategory(name);
   ui.setSearchNote(`Loading ${name}…`);
