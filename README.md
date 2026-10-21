@@ -12,6 +12,8 @@ A static, no-build site with two pages that share one design and one Gemini prox
 - **NutriAI** adds nutrition per serving, vitamins, the chemistry and cooking theory with optimal temperatures, clear making steps, and **NutriChat** to make the recipe healthier or higher in protein.
 - Details: [`docs/NUTRICHEF.md`](docs/NUTRICHEF.md).
 
+> **Layout.** Every section on both pages sits in a rounded, framed card on the green page, so the pages share one look.
+
 > **Naming.** In the user interface the AI is called **NutriAI** and the chat **NutriChat**. The technical docs and code comments name the underlying model (Google Gemini) where that matters, for example in the privacy notes.
 
 Design reference: [`docs/design-reference.jpg`](docs/design-reference.jpg).

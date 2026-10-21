@@ -207,6 +207,12 @@ export function renderProfile(analysis, per, servings) {
         </li>`).join('')
     : '<li class="muted">No cooking-theory notes were returned.</li>';
 
+  const notes = [
+    analysis.science.length && `${analysis.science.length} chemistry note${analysis.science.length === 1 ? '' : 's'}`,
+    analysis.theory.length && `${analysis.theory.length} cooking tip${analysis.theory.length === 1 ? '' : 's'}`,
+  ].filter(Boolean);
+  $('insight-meta').textContent = `${notes.join(' · ') || 'Chemistry and cooking theory'} · tap to expand`;
+
   $('safety').textContent = analysis.safety ? `Food safety: ${analysis.safety}` : '';
   $('safety').hidden = !analysis.safety;
   $('assumptions').textContent = analysis.assumptions

@@ -53,8 +53,16 @@ function aiErrorText(err) {
 /* Search                                                              */
 /* ------------------------------------------------------------------ */
 
+/** Picked = a recipe is chosen, so the result list, helper buttons and search note step aside. */
+function setPicked(on) {
+  $('chef-left').classList.toggle('is-picked', on);
+  $('show-results').hidden = !(on && state.results.length);
+  $('show-results').textContent = `← Back to ${state.results.length} results`;
+}
+
 function showResults(list, note) {
   state.results = list;
+  setPicked(false);
   state.shown = ui.RESULTS_PAGE;
   ui.renderResults(list, state.recipe?.id, state.shown);
   ui.setSearchNote(note);
@@ -63,6 +71,7 @@ function showResults(list, note) {
 }
 
 async function runSearch(rawQuery) {
+  setPicked(false);
   const query = rawQuery.trim();
   state.query = query;
   const token = ++state.searchToken;
@@ -91,6 +100,7 @@ async function runSearch(rawQuery) {
 }
 
 async function browseCategory(name) {
+  setPicked(false);
   const token = ++state.searchToken;
   state.query = '';
   $('search-input').value = '';
@@ -175,6 +185,7 @@ async function selectRecipe(source) {
 
   state.recipe = recipe;
   state.analysis = null;
+  setPicked(true);
   state.servings = recipe.servings > 0 ? recipe.servings : 4;
 
   ui.markActiveResult(recipe.id);
@@ -307,6 +318,7 @@ $('results').addEventListener('click', (e) => {
   if (btn) selectRecipe(btn.dataset.id);
 });
 
+$('show-results').addEventListener('click', () => setPicked(false));
 $('smart-btn').addEventListener('click', smartSearch);
 $('create-btn').addEventListener('click', createFromQuery);
 $('retry-btn').addEventListener('click', () => runAnalysis());

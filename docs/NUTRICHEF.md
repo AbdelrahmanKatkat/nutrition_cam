@@ -4,7 +4,7 @@ NutriChef is the second page of the site (`chef.html`). Search a recipe, pick on
 
 - **Nutritional facts per serving** (kcal, protein, carbs, fat) as rings, with a servings stepper and a plain statement of how big one serving is (see section 3a).
 - **Essential vitamins and minerals** as % of daily value.
-- **Scientific insight**: the chemistry behind the key steps, plus cooking theory with the optimal temperature (°C and °F) and food-safety temperatures.
+- **Scientific insight**: the chemistry behind the key steps, plus cooking theory with the optimal temperature (°C and °F). It is **collapsed by default** (the summary shows how many notes it holds) because not everyone needs it; the food-safety temperatures stay visible.
 - **Making steps**, rewritten clearly with temperatures and times.
 - **A chat** with Gemini about the recipe: higher protein, healthier, fewer calories, or "explain the science".
 
@@ -166,6 +166,7 @@ Used only when the database has nothing. It must produce a cookable recipe with 
 - **Automatic fallback**: a dish search with no match also tries the same word as an ingredient.
 - **Few or no results?** Because the free database is small, two optional buttons appear whenever a search finds fewer than 5 recipes, so an AI call is a deliberate choice: *Search smarter with Gemini* and *Create this recipe with Gemini*.
 - **Shareable links**: `chef.html?r=52772` opens a recipe directly.
+- **Out of the way once picked**: when a recipe is chosen, the result list, the helper buttons and the search note hide, leaving the search bar, the category chips and the selected recipe with its photo. A "← Back to N results" button brings the list back, and so does any new search or category.
 - **Paged results**: 10 at a time with "Show more", so the list never needs its own scrollbar and long categories (up to 168 recipes) stay fast.
 
 ---

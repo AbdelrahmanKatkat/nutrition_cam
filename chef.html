@@ -14,7 +14,7 @@
   <main class="chef">
 
     <!-- ============ LEFT: search, results, selected recipe ============ -->
-    <aside class="chef-left" aria-label="Search recipes">
+    <aside id="chef-left" class="chef-left" aria-label="Search recipes">
       <img class="deco deco--salad" src="assets/salad-bowl.svg" alt="" aria-hidden="true">
 
       <header class="chef-brand">
@@ -49,6 +49,7 @@
       <div id="category-chips" class="chip-row" aria-label="Browse by category"></div>
 
       <p id="search-note" class="search-note" role="status" aria-live="polite">Search by dish, or pick a category.</p>
+      <button id="show-results" class="btn btn--light show-results" type="button" hidden>← Back to results</button>
 
       <!-- Shown only when a search finds nothing: spend an AI call on purpose, not by default -->
       <div id="fallback-box" class="fallback" hidden>
@@ -133,14 +134,20 @@
             </section>
           </div>
 
-          <section class="panel-in panel-in--insight" aria-labelledby="sci-h">
-            <h3 id="sci-h">Scientific Insight</h3>
+          <details id="insight" class="panel-in panel-in--insight">
+            <summary>
+              <span class="insight-title">
+                <strong id="sci-h">Scientific Insight</strong>
+                <small id="insight-meta">Chemistry and cooking theory · tap to expand</small>
+              </span>
+              <span class="insight-toggle" aria-hidden="true"></span>
+            </summary>
             <h4>Explanation of Chemical Behavior</h4>
             <ul id="science" class="insights"></ul>
             <h4>Cooking Theory &amp; Optimal Temp</h4>
             <ul id="theory" class="insights"></ul>
-            <p id="safety" class="safety"></p>
-          </section>
+          </details>
+          <p id="safety" class="safety"></p>
 
           <p id="assumptions" class="assumptions"></p>
         </div>
