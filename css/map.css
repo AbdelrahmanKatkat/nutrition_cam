@@ -1,0 +1,157 @@
+/* ==========================================================================
+   NutriMap page. Loaded after styles.css and chat.css.
+   Layout: framed search column (cream) | framed map area (dark green), with a top-cuisine strip.
+   ========================================================================== */
+
+.map-body { background: var(--green-800); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.nm { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 12px; min-height: 100vh; }
+@media (min-width: 1000px) { .nm { grid-template-columns: 370px minmax(0, 1fr); gap: 20px; padding: 20px; } }
+
+/* ---------- left column ---------- */
+.nm-side {
+  display: flex; flex-direction: column; gap: 12px; padding: 22px 18px; min-width: 0;
+  background: var(--cream); border-radius: 26px; box-shadow: 0 10px 30px rgb(0 0 0 / .22);
+}
+@media (min-width: 1000px) { .nm-side { position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; } }
+
+.nm-brand { display: flex; align-items: center; gap: 12px; }
+.nm-brand h1 { font-size: 2rem; color: var(--green-800); letter-spacing: -.5px; line-height: 1; }
+
+.nm-search {
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  border: 1.5px solid #c8cfc6; border-radius: 99px; background: #fff; color: var(--muted);
+}
+.nm-search:focus-within { outline: 3px solid var(--green-500); outline-offset: 1px; border-color: var(--green-800); }
+.nm-search input { flex: 1; min-width: 0; padding: 12px 0; border: 0; background: transparent; font: inherit; color: var(--text); outline: none; }
+.nm-search input::placeholder { color: #8a948c; }
+
+.nm-h2 { font-size: 1.15rem; margin-top: 4px; }
+.nm-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nm-or { color: var(--muted); font-weight: 600; font-size: .9rem; }
+.nm-select { position: relative; flex: 1; min-width: 130px; }
+.nm-select select {
+  width: 100%; appearance: none; padding: 9px 34px 9px 16px; border-radius: 99px;
+  border: 0; background: #d7ecd9; color: var(--green-800); font: inherit; font-weight: 600; cursor: pointer;
+}
+.nm-select::after {
+  content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; pointer-events: none;
+  border-right: 2px solid var(--green-800); border-bottom: 2px solid var(--green-800); transform: translateY(-70%) rotate(45deg);
+}
+.nm-select select:focus-visible { outline: 3px solid var(--green-500); outline-offset: 2px; }
+
+.nm-count { font-size: .95rem; color: var(--muted); margin-top: 4px; }
+.nm-status { font-size: .85rem; color: var(--muted); min-height: 1.1em; }
+.nm-status.is-error { color: #b3261e; }
+.nm-muted { color: var(--muted); }
+
+/* ---------- result cards ---------- */
+.nm-results { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.nm-card {
+  border: 1.5px solid transparent; border-radius: 18px; background: #fff; box-shadow: 0 2px 8px rgb(0 0 0 / .06); overflow: hidden;
+}
+.nm-card.is-selected { border-color: var(--green-800); box-shadow: 0 6px 18px rgb(0 0 0 / .12); }
+.nm-card__head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border: 0; background: transparent; text-align: left; color: var(--text);
+}
+.nm-card__head:hover { background: rgb(27 77 50 / .04); }
+.nm-card__head:focus-visible { outline: 3px solid var(--green-500); outline-offset: -3px; }
+.nm-card__text { display: grid; min-width: 0; gap: 2px; }
+.nm-card__text strong { font-size: 1.02rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nm-card__text small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nm-rating {
+  flex: none; min-width: 48px; padding: 8px 10px; border-radius: 12px; text-align: center;
+  background: var(--pin); color: #fff; font-weight: 800; font-size: 1.05rem;
+}
+.nm-rating--none { color: #fff; }
+
+.nm-card__body { display: grid; gap: 12px; padding: 0 16px 16px; }
+.nm-card__media { display: grid; gap: 4px; }
+.nm-card__img {
+  display: grid; place-items: center; height: 180px; border-radius: 14px; overflow: hidden; background: var(--cream-dark);
+}
+.nm-card__img img { width: 100%; height: 100%; object-fit: cover; }
+.nm-card__letter { font-size: 3rem; font-weight: 800; color: var(--green-800); opacity: .6; }
+.nm-credit { font-size: .75rem; color: var(--muted); }
+.nm-card__rating-line { font-size: .95rem; }
+
+.nm-detail { border-top: 1px solid #e3e6e1; padding-top: 10px; }
+.nm-detail summary { cursor: pointer; font-weight: 800; color: var(--green-800); list-style: none; display: flex; justify-content: space-between; }
+.nm-detail summary::-webkit-details-marker { display: none; }
+.nm-detail summary::after { content: "−"; font-weight: 800; }
+.nm-detail:not([open]) summary::after { content: "+"; }
+.nm-detail summary:focus-visible { outline: 3px solid var(--green-500); outline-offset: 2px; border-radius: 6px; }
+.nm-details { display: grid; gap: 6px; margin-top: 8px; font-size: .9rem; }
+.nm-details div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; }
+.nm-details dt { color: var(--muted); }
+.nm-details dd { margin: 0; overflow-wrap: anywhere; }
+.nm-details a { color: var(--green-800); font-weight: 700; }
+
+.nm-card__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.nm-card__actions .btn { text-decoration: none; padding: 10px 16px; font-size: .92rem; }
+
+/* ---------- right: strip + map ---------- */
+.nm-main { display: grid; grid-template-rows: auto 1fr; gap: 12px; min-width: 0; }
+
+.nm-top { padding: 18px 18px 16px; border-radius: 26px; background: var(--green-800); color: #fff; box-shadow: 0 10px 30px rgb(0 0 0 / .22); }
+.nm-top h2 { font-size: 1.2rem; margin-bottom: 12px; }
+.nm-strip { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity; }
+.nm-tile {
+  flex: none; width: 118px; display: grid; justify-items: center; gap: 4px; padding: 10px 8px 12px;
+  border: 0; border-radius: 18px; background: var(--cream); color: var(--text); scroll-snap-align: start; cursor: pointer;
+}
+.nm-tile:hover { background: #fff; }
+.nm-tile:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.nm-tile small { color: var(--muted); font-size: .72rem; }
+.nm-tile__img {
+  display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: var(--cream-dark);
+}
+.nm-tile__img img { width: 100%; height: 100%; object-fit: cover; }
+.nm-tile__letter { font-size: 2rem; font-weight: 800; color: var(--green-800); }
+.nm-tile__name { font-weight: 800; font-size: .92rem; text-align: center; }
+.nm-top .nm-muted { color: #cfe5d3; }
+
+.nm-map-wrap { position: relative; min-height: 480px; border-radius: 26px; overflow: hidden; box-shadow: 0 10px 30px rgb(0 0 0 / .22); background: #1f3a2c; }
+#map { position: absolute; inset: 0; background: #1f3a2c; }
+@media (max-width: 999px) { .nm-map-wrap { min-height: 62vh; } }
+@media (min-width: 1000px) { .nm-main { grid-template-rows: auto minmax(0, 1fr); } .nm-map-wrap { min-height: 0; } }
+
+/* controls */
+.nm-controls { position: absolute; right: 14px; top: 14px; z-index: 500; display: grid; gap: 8px; }
+.nm-controls button, .nm-layers button {
+  width: 42px; height: 42px; border: 0; border-radius: 12px; background: var(--cream); color: var(--green-800);
+  font-size: 1.3rem; font-weight: 800; box-shadow: 0 2px 8px rgb(0 0 0 / .25); display: grid; place-items: center;
+}
+.nm-controls button:hover, .nm-layers button:hover { background: #fff; }
+.nm-controls button:focus-visible, .nm-layers button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.nm-layers { position: absolute; left: 14px; bottom: 34px; z-index: 500; display: flex; gap: 6px; }
+.nm-layers button { width: auto; padding: 0 12px; height: 34px; font-size: .82rem; }
+.nm-layers button[aria-pressed="true"] { background: var(--green-800); color: #fff; }
+
+.nm-hint {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 500;
+  padding: 8px 14px; border-radius: 99px; background: rgb(255 255 255 / .94); color: var(--green-800); font-size: .86rem; font-weight: 700;
+  box-shadow: 0 2px 8px rgb(0 0 0 / .2); white-space: nowrap;
+}
+.nm-hint:empty, .nm-hint[hidden] { display: none; }
+.nm-attrib { position: absolute; right: 8px; bottom: 6px; z-index: 500; font-size: .66rem; color: #cfe5d3; background: rgb(0 0 0 / .35); padding: 2px 6px; border-radius: 6px; }
+
+/* dark style: the street tiles with a colour filter (no tile key needed) */
+.nm-tiles-dark { filter: invert(1) hue-rotate(180deg) saturate(.55) brightness(.8) sepia(.18); }
+
+/* pins */
+.nm-pin-wrap { background: transparent; border: 0; }
+.nm-pin {
+  position: relative; display: grid; place-items: center; width: 42px; height: 42px; margin: 0 auto;
+  border-radius: 50%; background: var(--pin); color: #fff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / .35); border: 2px solid #fff; font-weight: 800; font-size: .82rem;
+}
+.nm-pin::after {  /* the little tail that points at the place */
+  content: ""; position: absolute; left: 50%; bottom: -9px; width: 12px; height: 12px;
+  background: var(--pin); border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateX(-50%) rotate(45deg);
+}
+.nm-pin.is-selected { box-shadow: 0 0 0 5px rgb(47 163 90 / .45), 0 3px 8px rgb(0 0 0 / .35); }
+.leaflet-marker-icon:focus-visible .nm-pin { outline: 3px solid var(--yellow); }

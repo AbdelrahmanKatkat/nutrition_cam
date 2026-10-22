@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Central configuration. Change values here instead of hunting through modules.
  * @module config
  */
@@ -24,7 +24,7 @@ export const CONFIG = {
 
   openFoodFacts: {
     baseUrl: 'https://world.openfoodfacts.org',
-    /** Only request the fields we use – keeps responses small. */
+    /** Only request the fields we use â€“ keeps responses small. */
     fields: [
       'code', 'product_name', 'brands', 'nutriscore_grade',
       'nutriments', 'labels_tags', 'image_front_small_url',
@@ -42,7 +42,7 @@ export const CONFIG = {
 
   /**
    * Cloudflare Web Analytics: cookie-free visit, country and device stats.
-   * Create a site in Cloudflare dashboard → Analytics & Logs → Web Analytics, then paste its token here.
+   * Create a site in Cloudflare dashboard â†’ Analytics & Logs â†’ Web Analytics, then paste its token here.
    * Leave empty to load no analytics script at all.
    */
   webAnalyticsToken: '4656c232b8a843d0b1d1fb63df114a40',
@@ -53,6 +53,9 @@ export const CONFIG = {
     /** How many analysed recipes are remembered in this browser (saves AI calls). */
     cacheSize: 12,
   },
+
+  /** NutriMap: where the map opens when the visitor's location is not available. Change to your city. */
+  map: { fallback: { lat: 30.0444, lon: 31.2357, zoom: 15 } },
 
   /** NutriChat (both pages): gap between AI requests, and the longest message a user can send. */
   chat: { cooldownMs: 3000, maxMessageChars: 400 },

@@ -7,6 +7,8 @@ A static, no-build site with two pages that share one design and one Gemini prox
 - **Open Food Facts** returns nutrition facts, Nutri-Score and labels for a product (by barcode, or by the meal name).
 - **NutriChat** answers questions about the result: healthier swaps, higher-protein versions, portion changes, or general nutrition.
 
+**NutriMap** (`nutrimap.html`): a map of restaurants around you, pins coloured by rating, filtered by cuisine, with a top-cuisine strip. Ratings need a provider connected; details in [`docs/NUTRIMAP.md`](docs/NUTRIMAP.md).
+
 **NutriChef** (`chef.html`): search a recipe and learn what is in it and why it works.
 - **TheMealDB** (free recipe database) supplies recipes, photos, ingredients and instructions.
 - **NutriAI** adds nutrition per serving, vitamins, the chemistry and cooking theory with optimal temperatures, clear making steps, and **NutriChat** to make the recipe healthier or higher in protein.
@@ -69,6 +71,7 @@ Details are in [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md#6-privacy).
 ```
 index.html                  NutriSnap page markup
 chef.html                   NutriChef page markup
+nutrimap.html               NutriMap page markup
 css/styles.css              shared styling + NutriSnap (CSS variables for the palette)
 css/chef.css                NutriChef styling
 css/chat.css                NutriChat panel (shared by both pages)
@@ -95,6 +98,7 @@ proxy/                      Cloudflare Worker: key, prompts, gates (own README)
   src/prompts/              scan.js (NutriSnap scan + NutriChat), chef.js (NutriChef)
 docs/
   NUTRICHEF.md              NutriChef design, APIs, prompts
+  NUTRIMAP.md               NutriMap data sources, loading, ratings
   IMPROVEMENTS.md           roadmap and known limitations
   AGENTIC_AI.md             how to add agentic AI later
   design-reference.jpg

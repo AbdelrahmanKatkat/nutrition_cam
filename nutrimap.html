@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1b4d32">
+  <title>NutriMap – Find healthy places to eat</title>
+  <link rel="icon" href="assets/nutrimap-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/map.css">
+</head>
+<body class="map-body">
+  <main class="nm">
+
+    <!-- ============ LEFT: search, filters, results ============ -->
+    <aside class="nm-side" aria-label="Find restaurants">
+      <header class="nm-brand">
+        <img src="assets/nutrimap-logo.svg" alt="" width="52" height="52">
+        <h1>NutriMap</h1>
+      </header>
+
+      <nav class="app-switch" aria-label="Switch app">
+        <a href="index.html">NutriSnap</a>
+        <a href="chef.html">NutriChef</a>
+        <a href="nutrimap.html" aria-current="page">NutriMap</a>
+      </nav>
+
+      <form id="place-form" class="nm-search" role="search">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+        <input id="place-input" type="search" maxlength="100" autocomplete="off"
+               placeholder="Search locations or restaurants" aria-label="Search a location">
+      </form>
+
+      <h2 class="nm-h2">Filtered Cuisine</h2>
+      <div class="nm-filters">
+        <label class="nm-select"><span class="sr-only">First cuisine</span><select id="cuisine-a"></select></label>
+        <span class="nm-or">or</span>
+        <label class="nm-select"><span class="sr-only">Second cuisine</span><select id="cuisine-b"></select></label>
+      </div>
+
+      <p id="list-count" class="nm-count">Results (0)</p>
+      <p id="nm-status" class="nm-status" role="status" aria-live="polite"></p>
+
+      <ul id="results" class="nm-results" aria-label="Restaurants"></ul>
+    </aside>
+
+    <!-- ============ RIGHT: top cuisines strip + map ============ -->
+    <section class="nm-main" aria-label="Map">
+      <div class="nm-top">
+        <h2>Top Cuisines</h2>
+        <div id="cuisine-strip" class="nm-strip" aria-label="Top cuisines nearby"></div>
+      </div>
+
+      <div class="nm-map-wrap">
+        <div id="map" role="region" aria-label="Restaurant map"></div>
+
+        <div class="nm-controls" role="group" aria-label="Map controls">
+          <button id="locate" type="button" aria-label="Centre on my location" title="My location">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 3h-2.06A7.99 7.99 0 0 0 13 4.06V2h-2v2.06A7.99 7.99 0 0 0 4.06 11H2v2h2.06A7.99 7.99 0 0 0 11 19.94V22h2v-2.06A7.99 7.99 0 0 0 19.94 13H22v-2z"/></svg>
+          </button>
+          <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+          <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+        </div>
+
+        <div class="nm-layers" role="group" aria-label="Map style">
+          <button id="layer-dark" type="button" aria-pressed="true" title="Dark map">Dark</button>
+          <button id="layer-light" type="button" aria-pressed="false" title="Street map">Street</button>
+        </div>
+
+        <p id="map-hint" class="nm-hint" role="status" aria-live="polite"></p>
+        <p class="nm-attrib">Map data © OpenStreetMap contributors</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="js/map.js"></script>
+</body>
+</html>
